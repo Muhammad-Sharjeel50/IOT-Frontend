@@ -1,0 +1,28 @@
+/* Default styles for larger screens */
+.header-container {
+    background: white;
+    height: 70px;
+    padding: 1rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgb(250, 250, 250);
+    border: rgb(250, 250, 250);
+    /* border: 1px solid #000; */
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 1rem;
+    }
+
+    /* Adjust other styles as needed for smaller screens */
+}
