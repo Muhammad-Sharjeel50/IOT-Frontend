@@ -28,8 +28,9 @@ const AgentDashBoard = () => {
 	console.log("totalcustomer", totalCustomers);
 	const endPoint = process.env.REACT_APP_BASE_URL
 	// const timeActive = localStorage.getItem('timer_Active Time');
-	const [apiweather, setApiWeather] = useState({})
-	const [temperature, setTemperatures] = useState(false)
+	const [apiweather, setApiWeather] = useState([])
+	const [cityName, setCityName] = useState('');
+	// const [temperature, setTemperatures] = useState(null)
 	const [humidity, setHumidity] = useState(0);
 	const [isActive, setIsActive] = useState(false);
 	const [buttonText, setButtonText] = useState('Action');
@@ -44,7 +45,7 @@ const AgentDashBoard = () => {
 	const [time, setTime] = useState();
 	const [sum, setSum] = useState(0);
 	const [hourIndex, setHourIndex] = useState(1);
-
+	const [forecastData, setForecastData] = useState([]);
 	const [newpowerdata, setNewpowerdata] = useState([])
 	// const [humidity, setHumidity] = useState(0); // Initialize humidity state
 
@@ -78,103 +79,179 @@ const AgentDashBoard = () => {
 	// 	'06',
 	// ];
 	let data;
-	useEffect(() => {
-		const fetchWeatherData = async () => {
-			try {
-				const response = await axios.get('http://192.168.137.240:5000/api/sensors/data/1100');
-				data = response.data[0].data;
-				// let aravoltage = JSON.parse(response.data[0].voltage);
-				// console.log("aravoltage", aravoltage[0])
-				setApiWeather(response.data.daily);
-				setHumidity(response.data[0].humidity)
-				setTemperature(response.data[0].temperature)
-				// setVoltage(response.data[0]?.voltage
-				setCurrent(response.data[0].data[0].current)
-				setPhases(response.data[0].status)
-				setPollutant(response.data[0].pollutant)
-				const weather = () => {
-					const city = 'Seattle';
-					fetch(`${api.base}weather?q=${city}&appid=${api.key}`)
-						.then(res => {
-							if (!res.ok) {
-								throw new Error('Network response was not ok ' + res.statusText);
-							}
-							return res.json();
-						})
-						.then(result => {
-							console.log("weather api::", result);
-							setTemperatures(true)
-							setApiWeather(result);
-						})
-						.catch(error => {
-							console.error('There has been a problem with your fetch operation:', error);
-						});
-				};
+	// useEffect(() => {
+	const fetchWeatherData = async () => {
+		try {
+			const response = await axios.get('http://192.168.137.240:5000/api/sensors/data/24:0A:C4:7B:2E:14');
+			data = response.data[0].data;
+			// let aravoltage = JSON.parse(response.data[0].voltage);
+			// console.log("aravoltage", aravoltage[0])
+			setApiWeather(response.data.daily);
+			console.log("jududhcuhduchduchdu", apiweather)
+			setHumidity(response.data[0].humidity)
+			setTemperature(response.data[0].temperature)
+			// setVoltage(response.data[0]?.voltage
+			setCurrent(response.data[0].data[0].current)
+			setPhases(response.data[0].status)
+			setPollutant(response.data[0].pollutant)
 
-				weather();
-				// Get the current hour and format it to a 12-hour format
-				const currentHour = new Date().getHours();
-				let hourIn12HourFormat = currentHour % 12 || 12;
-				const formattedHour = hourIn12HourFormat.toString().padStart(2, '0');
-				let filteredDatas;
-				// Calculate sums for the current hour and set others to 0
-				const sums = xLabels.map(label => {
-					if (label === formattedHour) {
-						filteredDatas = data.filter(item => {
-							const hour = item.reading_time.split(':')[0];
-							return hour === label;
-						});
-						const powerValues = filteredDatas.map(item => item.power);
-						const sum = powerValues.reduce((acc, power) => acc + power, 0) / 1000;
-						return sum;
-					}
-					return 0;
+			// Get the current hour and format it to a 12-hour format
+			const currentHour = new Date().getHours();
+			let hourIn12HourFormat = currentHour % 12 || 12;
+			const formattedHour = hourIn12HourFormat.toString().padStart(2, '0');
+			let filteredDatas;
+			// Calculate sums for the current hour and set others to 0
+			const sums = xLabels.map(label => {
+				if (label === formattedHour) {
+					filteredDatas = data.filter(item => {
+						const hour = item.reading_time.split(':')[0];
+						return hour === label;
+					});
+					const powerValues = filteredDatas.map(item => item.power);
+					const sum = powerValues.reduce((acc, power) => acc + power, 0) / 1000;
+					return sum;
+				}
+				return 0;
+			});
+
+			setHourlySums(sums);
+
+			// const hourIndex = 1; // Index for '02'
+
+
+
+			const powerValues = filteredDatas.map(item => item.power);
+
+			const sumss = powerValues.reduce((acc, power) => acc + power, 0) / 1000; // Calculate sum and convert to kW
+			setSum(sumss);
+			console.log("Calculated Total Power (kW):", sum); // Debugging log
+
+			setTotalPower(sum);
+			setCarbon_dioxide(response.data[0].carbon_dioxide)
+			setTime(response.data[0].reading_time)
+			console.log("timeeeeeeeeee", response.data[0].reading_time)
+			// setPower(response.data[0].power)
+
+
+
+			// Add total power to uData
+			setNewpowerdata(prevUData => [...prevUData, sum]);
+			// setNewpowerdata(prevUData => [...prevUData, totalPower]);
+
+			console.log("datttttttttttttttttttttttt", sum)
+			console.log("datttttttttttttttttttttttt123", newpowerdata)
+
+			setPower(powerValues);
+			console.log("response.data[0].powerValues", powerValues)
+
+			console.log("dattttt", response)
+			console.log("dattttt", response.data[0])
+
+		} catch (error) {
+			console.error('Error fetching weather data:', error);
+		}
+	};
+
+	fetchWeatherData();
+	// }, [data, xLabels]);
+
+	const api = {
+		key: '446d6bfc79d6130fa07d4b04a5239eca',
+		base: "https://api.openweathermap.org/data/2.5/"
+	};
+
+	const weather = () => {
+		const city = 'Seattle';
+		fetch(`${api.base}forecast?q=${city}&appid=${api.key}`)
+			.then(res => {
+				if (!res.ok) {
+					throw new Error('Network response was not ok ' + res.statusText);
+				}
+				return res.json();
+			})
+			.then(result => {
+				console.log("weather api::", result);
+
+				const currentDate = new Date(); // Current date
+				const todayForecast = result.list.find(item => {
+					// Find the forecast for today
+					const forecastDate = new Date(item.dt * 1000);
+					return forecastDate.getDate() === currentDate.getDate();
 				});
+				const forecastData = result.list.filter(item => {
+					// Filter out undefined values and ensure that each item represents a day
+					return item && item.dt_txt.includes('12:00:00');
+				}).slice(0, 6); // Slicing to get the next 6 days
 
-				setHourlySums(sums);
+				if (todayForecast) {
+					// Include today's forecast at the beginning of the array
+					forecastData.unshift(todayForecast);
+				}
+				console.log("iconssssss==========================================", result.list[0].weather[0].main);
 
-				// const hourIndex = 1; // Index for '02'
+				setApiWeather(result.list[0].weather[0].main)
+				console.log("Forecast Data:", forecastData);
+				setCityName(result.city.name);
+				console.log("waetherapiiiiiiiiiii", cityName)
+				setForecastData(forecastData);
+				console.log("city name eee", result.city.name)
+			})
+			.catch(error => {
+				console.error('There has been a problem with your fetch operation:', error);
+			});
+	};
+
+	weather();
+
+	const getDayName = (timestamp) => {
+		const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		const date = new Date(timestamp * 1000);
+		return days[date.getDay()];
+	};
+
+	const convertKelvinToCelsius = (temp) => {
+		return (temp - 273.15).toFixed(2);
+	};
+	const getWeatherIcon = (weatherCondition) => {
+		switch (weatherCondition) {
+			case 'Clear':
+				return 'clear';
+			case 'Clouds':
+				return 'cloudy';
+			case 'Rain':
+				return 'Rain	';
+			case 'Thunderstorm':
+				return 'thunderstorm';
+			case 'Snow':
+				return 'snowy';
+			case 'Mist':
+			case 'Smoke':
+			case 'Haze':
+			case 'Dust':
+			case 'Fog':
+			case 'Sand':
+			case 'Ash':
+			case 'Squall':
+			case 'Tornado':
+				return 'foggy';
+			default:
+				return 'unknown';
+		}
+	};
+	const groupedForecastData = forecastData.reduce((acc, item) => {
+		const day = getDayName(item.dt);
+		if (!acc[day]) {
+			acc[day] = item;
+		}
+		return acc;
+	}, {});
 
 
+	const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+	const forecastFor7Days = daysOfWeek.map(day => groupedForecastData[day]);
+	// console.log("lllllllllllllllllllllllllllll",forecastFor7Days)
 
-				const powerValues = filteredDatas.map(item => item.power);
-
-				const sumss = powerValues.reduce((acc, power) => acc + power, 0) / 1000; // Calculate sum and convert to kW
-				setSum(sumss);
-				console.log("Calculated Total Power (kW):", sum); // Debugging log
-
-				setTotalPower(sum);
-				setCarbon_dioxide(response.data[0].carbon_dioxide)
-				setTime(response.data[0].reading_time)
-				console.log("timeeeeeeeeee", response.data[0].reading_time)
-				// setPower(response.data[0].power)
-
-
-
-				// Add total power to uData
-				setNewpowerdata(prevUData => [...prevUData, sum]);
-				// setNewpowerdata(prevUData => [...prevUData, totalPower]);
-
-				console.log("datttttttttttttttttttttttt", sum)
-				console.log("datttttttttttttttttttttttt123", newpowerdata)
-
-				setPower(powerValues);
-				console.log("response.data[0].powerValues", powerValues)
-
-				console.log("dattttt", response)
-				console.log("dattttt", response.data[0])
-
-			} catch (error) {
-				console.error('Error fetching weather data:', error);
-			}
-		};
-
-		fetchWeatherData();
-	}, [data, xLabels]);
-
-
-
-
+	// Empty dependency array ensures the effect runs only once
 	const currentDate = new Date();
 
 	// Get hours, minutes, and period (AM/PM)
@@ -278,39 +355,28 @@ const AgentDashBoard = () => {
 
 
 	// const chartSeries = [`${humidity}`];
-	const api = {
-		key: '446d6bfc79d6130fa07d4b04a5239eca',
-		base: "https://api.openweathermap.org/data/2.5/"
-	};
 
-	useEffect(() => {
-
-	}, []); // Empty dependency array ensures the effect runs only once
-
-
-
-
-	function valuetext(value) {
-		console.log("valurrrrrrrr", value);
-		return `${value}°C`;
-	}
+	// function valuetext(value) {
+	// 	console.log("valurrrrrrrr", value);
+	// 	return `${value}°C`;
+	// }
 
 	const theme = createTheme({
 		components: {
 			MuiSlider: {
 				styleOverrides: {
 					thumb: {
-						color: 'black', // Custom thumb color
-						width: 20, // Set the width of the thumb
-						height: 20, // Set the height of the thumb
+						color: 'black',
+						width: 20,
+						height: 20,
 					},
 					track: {
-						color: '#888888', // Custom track color
-						height: 8, // Set the height of the track
+						color: '#888888',
+						height: 8,
 					},
 					rail: {
-						color: '#888888', // Custom rail color
-						height: 10, // Set the height of the rail
+						color: '#888888',
+						height: 10,
 					},
 				},
 			},
@@ -338,7 +404,6 @@ const AgentDashBoard = () => {
 						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 							<h1>Usage Status</h1>
 							<div style={{ display: 'flex' }}>
-
 								<FaBeer style={{ margin: '10 10px', color: 'black', width: '40px' }} />
 								<FaCoffee style={{ margin: '10 10px', color: 'black', width: '40px' }} />
 								<button style={{}}
@@ -361,14 +426,31 @@ const AgentDashBoard = () => {
 						</div>
 
 						{/* <div className="chart-container"> */}
-						<BarChart
-							width={300}
-							height={200}
-							colors={["gray"]}
-							series={[{ data: hourlySums, label: 'Current Usage', type: 'bar' }]}
-							xAxis={[{ scaleType: 'band', data: xLabels }]}
-						/>
-
+						<div style={{ height: "275px", overflowY: "auto", marginTop: "10px" }}>
+							<div style={{ height: "200px" }}> {/* Adjust height as needed */}
+								<BarChart
+									width={300}
+									height={200}
+									colors={["gray"]}
+									series={[{ data: hourlySums, label: 'Current Usage', type: 'bar' }]}
+									xAxis={[{ scaleType: 'band', data: xLabels }]}
+								/>
+								<BarChart
+									width={300}
+									height={200}
+									colors={["gray"]}
+									series={[{ data: hourlySums, label: 'Previous Usage', type: 'bar' }]}
+									xAxis={[{ scaleType: 'band', data: xLabels }]}
+								/>
+								<BarChart
+									width={300}
+									height={200}
+									colors={["gray"]}
+									series={[{ data: hourlySums, label: 'Forecasted Usage', type: 'bar' }]}
+									xAxis={[{ scaleType: 'band', data: xLabels }]}
+								/>
+							</div>
+						</div>
 						{/* </div> */}
 						{/* <CustomCard title="Big Card 1" /> */}
 					</div>
@@ -472,7 +554,7 @@ const AgentDashBoard = () => {
 				<div className="row d-flex justify-content-center mt-10">
 					<div className="col-md-6 w-full md:w-64">
 						<h1 className="text-center md:text-left">Temperature</h1>
-						{temperature ? (
+						{Temperature ? (
 							<ReactApexChart options={chartOptions} series={chartSeries} type="radialBar" height={450} />
 						) : "No weather to display"}
 					</div>
@@ -502,29 +584,29 @@ const AgentDashBoard = () => {
 				<div className="bg-white text-white p-6 rounded-lg shadow-lg max-w-sm">
 					<div className="flex justify-between items-center">
 						<div>
-							{/* <h2 className="text-lg font-semibold">{apiweather?.name}</h2> */}
-							{console.log("////////////////////////////////////////////", apiweather?.name)}
-							<h1 className="text-4xl font-bold">{Temperature.toFixed(2)}</h1>
+							<h1 className="text-lg font-semibold text-black">
+								{cityName ? cityName : 'Loading...'}
+							</h1>
+							{console.log("////////////////////////////////////////////", cityName)}
+							<h1 className="text-4xl font-bold text-black">{Temperature.toFixed(2)}</h1>
+
 							<p className="text-sm mt-2">15d : 15h : 27m : 40s</p>
 						</div>
 						<div>
 							<img src="https://img.icons8.com/ios-filled/50/000000/partly-cloudy-day--v1.png" alt="Weather Icon" className="w-16" />
 							<p className="text-sm text-center">Today</p>
 						</div>
+
 					</div>
 					<div className="flex justify-between mt-4 text-black">
-						{[
-							{ day: 'Mon', temp: '22°C', icon: 'cloudy' },
-							{ day: 'Tue', temp: '24°C', icon: 'sunny' },
-							{ day: 'Wed', temp: '23°C', icon: 'rain' },
-							{ day: 'Thu', temp: '22°C', icon: 'sunny' },
-							{ day: 'Fri', temp: '24°C', icon: 'cloudy' },
-							{ day: 'Sat', temp: '23°C', icon: 'sunny' },
-						].map((item, index) => (
+						{forecastData.map((data, index) => (
 							<div key={index} className="flex flex-col items-center text-black">
-								<img src={`https://img.icons8.com/ios-filled/50/000000/${item.icon}.png`} alt={`${item.icon} icon`} className="w-8 h-8" />
-								<p className="text-sm mt-1">{item.temp}</p>
-								<p className="text-xs">{item.day}</p>
+								{/* Assuming you have icons corresponding to weather conditions */}
+								<img src={`https://img.icons8.com/ios-filled/50/000000/${getWeatherIcon(data?.weather[0].icon)}.png`} alt={`${data?.weather[0].main} icon`} className="w-8 h-12" />
+								<p className="text-sm mt-1">{convertKelvinToCelsius(data?.main.temp)}°C</p>
+								{/* Assuming you have a function to get day name from date */}
+								<p className="text-xs">{getDayName(data?.dt)}</p>
+
 							</div>
 						))}
 					</div>

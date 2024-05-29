@@ -14,7 +14,7 @@ import AgentHistory from './pages/Agentpages/Agenthistory';
 import BotConfiguration from './pages/BotConfiguration/BotConfiguration';
 import Agentsmsmain from './pages/Agentpages/Agentsmsmain';
 import ActiveAgentsmain from './pages/Agentpages/ActiveAgentsmain';
-
+// import AdminDashBoard from './components/Dashboard/AdminDashBoard';
 import Clientwebsite from './pages/Clientwebsite';
 import Dashboard from './pages/Dashboard';
 import UnAuthorized from './pages/ErrorPages/unAuthorized';
@@ -24,6 +24,7 @@ import PermissionWrapper from './components/Routes/PermissionWrapper';
 import UpdatePage from './pages/User/UpdatePage';
 import Permitrole from './pages/rolespermissions/Permitrole';
 import RolesPermissions from './pages/rolespermissions/RolesPermissions';
+import AdminDashBoard from './components/Dashboard/AdminDashBoard';
 
 export default function App() {
 
@@ -45,6 +46,13 @@ export default function App() {
 
         <Route path="/home" element={
            < Home />
+        } />
+        
+
+        <Route path='/three' element={
+          // <ProtectedRoute>
+            <AdminDashBoard />
+          // </ProtectedRoute>
         } />
 
         <Route path='/dashboard' element={

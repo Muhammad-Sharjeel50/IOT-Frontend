@@ -2,8 +2,12 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Label } from 'rechart
 import female from '../../assets/icons/female.png'
 import male from '../../assets/icons/male.png'
 import React, { useState, useMemo, useEffect } from 'react';
+import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
-
+import AddCards from './AddCards';
+import { PiWaveSineFill } from "react-icons/pi";
+// import { BsLightningCharge } from "react-icons/bs";
+import { BsLightningCharge } from "react-icons/bs";
 const COLORS = ['#FFBB28', '#08a108', '#c71930']
 const images = [
 	<img src={male} height="100%" width="100%" alt="male" />,
@@ -14,217 +18,220 @@ const images = [
 const AdminDashBoard = () => {
 	const endPoint = process.env.REACT_APP_BASE_URL
 	const [data, setData] = useState([])
-	const [customers, setCustomers] = useState([])
-	const [filteredData, setFilteredData] = useState([])
-	const [voiceCallAccounts, setVoiceCallAccounts] = useState([])
-	const [audioCallAccounts, setAudioCallAccounts] = useState([])
-	const [videoCallAccounts, setVideoCallAccounts] = useState([])
-	const [totalVoiceAndAudioCalls, setTotalVoiceAndAudioCalls] = useState([])
-	const [webchat, setWebchat] = useState([]);
-	const [totalsmsAndwebchat, setTotalsmsAndwebchat] = useState([]);
-	const [smsAccounts, setSmsAccounts] = useState(null)
-	const [activeAgents, setActiveAgents] = useState(null);
-	const [activeQueries, setActiveQueries] = useState(null);
-	const userData = JSON.parse(localStorage.getItem('user'))
-	const [filteredCustomers, setFilteredCustomers] = useState([]);
-	const totalCustomers = customers.length
-	console.log("hhhhhhhhh", userData)
-	const agentDepartment = userData?.role_or_permission
-	const [resolvedAccounts, setResolvedAccounts] = useState(0);
+	const [phase1current, setCurrentphase1] = useState([])
+	const [phase1energy, setEnergyphase1] = useState([])
+	const [phase1frequency, setFrequencyphase1] = useState([])
+	const [phase1power, setPowerphase1] = useState([])
+	const [phase1power_factor, setPower_factorphase1] = useState([])
+	const [phase1voltage, setVoltagephase1] = useState([])
 
-	useEffect(() => {
-		fetchCustomers()
-		fetchData()
 
-	}, [])
+
+	const [phase2current, setCurrentphase2] = useState([])
+	const [phase2energy, setEnergyphase2] = useState([])
+	const [phase2frequency, setFrequencyphase2] = useState([])
+	const [phase2power, setPowerphase2] = useState([])
+	const [phase2power_factor, setPower_factorphase2] = useState([])
+	const [phase2voltage, setVoltagephase2] = useState([])
+
+
+
+	const [phase3current, setCurrentphase3] = useState([])
+	const [phase3energy, setEnergyphase3] = useState([])
+	const [phase3frequency, setFrequencyphase3] = useState([])
+	const [phase3power, setPowerphase3] = useState([])
+	const [phase3power_factor, setPower_factorphase3] = useState([])
+	const [phase3voltage, setVoltagephase3] = useState([])
+
+
+	// useEffect(() => {
+	
+		
+		setTimeout(()=>{
+			fetchData()
+		},1000)
+	
 
 	const fetchData = async () => {
-
 		try {
-			const url = `http://${endPoint}:8000/core/user/`
-			const response = await axios.get(url)
-			
-			setFilteredData(response.data.data)
-		
-			const totalAccounts = response.data.data.length;
-			const activeAccounts = response.data.data.filter((account) => account.is_active).length;
-			const inactiveAccounts = totalAccounts - activeAccounts;
+			const response = await axios.get('http://192.168.137.105:5000/api/sensors/data/C8:C9:A3:C8:AE:60');
+			const data = response.data;
+			console.log("data================>",data)
+			if (data.length > 0) {
+				const lastIndex = data.length - 1;
+				const latestData = data[lastIndex];
+				if (latestData.phase1 && latestData.phase1.length > 0) {
+					const lastIndexPhase1 = latestData.phase1.length - 1;
+					const phase1Data = latestData.phase1[lastIndexPhase1];
+	
 
-		} catch (error) {
-			console.error('Error fetching data:', error)
-		}
-	}
+					const lastIndexPhase2 = latestData.phase2.length - 1;
+					const phase2Data = latestData.phase2[lastIndexPhase2];
+	
+					const lastIndexPhase3 = latestData.phase3.length - 1;
+					const phase3Data = latestData.phase3[lastIndexPhase3];
 
-	const fetchCustomers = async () => {
-		let config = {
-			method: 'get',
-			url: `http://${endPoint}:8000/core/customer/`,
-		};
+					console.log("Last Index Phase1 Data:", phase1Data);
+					console.log("Last Index Phase2 Data:", phase2Data); 	
 
-		try {
-			const response = await axios.request(config);
+					console.log("Last Index Phase1 Data:", phase3Data);
 
-			if (response.status === 200) {
-				setCustomers(response.data.data);
-				const filteredCustomersCount = response.data.data.filter((customer) => customer.is_resolved).length;
-				const videoCallAccounts = response.data.data.filter((account) => account.customer_query_service === 'videocall').length;
-				const voiceCallCount = response.data.data.filter(
-					(account) => account.customer_query_service === 'voicecall'
-				).length;
 
-				const audioCallCount = response.data.data.filter(
-					(account) => account.customer_query_service === 'audiocall'
-				).length;
 
-				const totalVoiceAndAudioCalls = voiceCallCount + audioCallCount;
-				const smsCount = response.data.data.filter((account) => account.customer_query_service === 'sms').length;
-				const webcount = response.data.data.filter(
-					(account) => account.customer_query_service === 'webchat'
-				).length;
-				const totalsmsAndwebchat = webcount + smsCount;
-			console.log("totalsmsAndwebchat",totalsmsAndwebchat)
-				setFilteredCustomers(filteredCustomersCount);
-				setVideoCallAccounts(videoCallAccounts);
-				setVoiceCallAccounts(voiceCallCount);
-				setAudioCallAccounts(audioCallCount);
-				setSmsAccounts(smsCount);
-				setWebchat(webchat);
-				setTotalsmsAndwebchat(totalsmsAndwebchat);
-				setTotalVoiceAndAudioCalls(totalVoiceAndAudioCalls);
-			
-				const newData = [
-					{ name: 'Active', value: response.data.data.length },
-					{ name: 'Resolved', value: filteredCustomersCount },
-				];
-				setData(newData);
-				;
+
+
+					setCurrentphase1(phase1Data.current);
+					setEnergyphase1(phase1Data.energy);
+					setFrequencyphase1(phase1Data.frequency);
+					setPowerphase1(phase1Data.power);
+					setPower_factorphase1(phase1Data.power_factor);
+					setVoltagephase1(phase1Data.voltage);
+
+
+
+					setCurrentphase2(phase2Data.current);
+					setEnergyphase2(phase2Data.energy);
+					setFrequencyphase2(phase2Data.frequency);
+					setPowerphase2(phase2Data.power);
+					setPower_factorphase2(phase2Data.power_factor);
+					setVoltagephase2(phase2Data.voltage);
+
+
+
+
+					setCurrentphase3(phase3Data.current);
+					setEnergyphase3(phase3Data.energy);
+					setFrequencyphase3(phase3Data.frequency);
+					setPowerphase3(phase3Data.power);
+					setPower_factorphase3(phase3Data.power_factor);
+					setVoltagephase3(phase3Data.voltage);
+
+
+				} else {
+					console.warn("No phase1 data available");
+				}
+			} else {
+				console.warn("No data available");
 			}
 		} catch (error) {
-			
+			console.error('Error fetching weather data:', error);
 		}
 	};
-
-
-	const activeAccounts = useMemo(() => {
-		return filteredData.filter((account) => {
-			return account.is_active
-		})
-	}, [filteredData])
+	
+	
+	const [chartData, setChartData] = useState({
+		series: [
+			{
+				name: 'phase1',
+				data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
+			},
+			{
+				name: 'phase 2',
+				data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+			},
+			{
+				name: 'phase 3',
+				data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+			},
+		],
+		options: {
+			chart: {
+				type: 'bar',
+				height: 350,
+			},
+			plotOptions: {
+				bar: {
+					horizontal: false,
+					columnWidth: '55%',
+					endingShape: 'rounded',
+				},
+			},
+			dataLabels: {
+				enabled: false,
+			},
+			stroke: {
+				show: true,
+				width: 2,
+				colors: ['transparent'],
+			},
+			xaxis: {
+				categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+			},
+			yaxis: {
+				title: {
+					text: '$ (thousands)',
+				},
+			},
+			fill: {
+				opacity: 1,
+			},
+			tooltip: {
+				y: {
+					formatter: function (val) {
+						return "$ " + val + " thousands";
+					},
+				},
+			},
+		},
+	});
 
 	return (
 		<>
-			<div className="w-4/5 flex flex-col p-2">
-				<div className="h-2/5 py-1 px-2">
-					<div className="bg-white rounded-lg h-full px-3 py-2 ">
-						<div className="flex h-3/5 flex-col">
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className=" w-full h-full bg-gray-800 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold ">Active Agents</h3>
-								<p className="w-1/6 px-4 font-semibold">{activeAccounts.length}</p>							</div>
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className=" w-full h-full bg-blue-800 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold ">Active Queries</h3>
-								<p className="w-1/6 px-4 font-semibold">{totalCustomers}</p>
-							</div>
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className="w-full h-full bg-teal-500 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold"> Voice Queries</h3>
-								<p className="w-1/6 px-4 font-semibold"> {totalVoiceAndAudioCalls}</p>
-							</div>
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className=" w-full h-full bg-gray-800 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold">Messaging Queries</h3>
-								<p className="w-1/6 px-4 font-semibold"> {totalsmsAndwebchat}</p>
-							</div>
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className=" w-full h-full bg-blue-800 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold"> Video Queries</h3>
-								<p className="w-1/6 px-4 font-semibold">{videoCallAccounts}</p>
-							</div>
-							<div className="flex flex-wrap w-full h-1/3 py-1">
-								<div className="  w-1/6  px-6">
-									<div className=" w-full h-full bg-blue-800 rounded-lg"></div>
-								</div>
-								<h3 className="w-4/6 px-6 font-semibold ">Resolved Queries</h3>
-								<p className="w-1/6 px-4 font-semibold"> {filteredCustomers}</p>
-							</div>
 
-							<div className="  w-1/6  px-6">
-								<div className=" w-full h-full bg-gray-800 rounded-lg"></div>
-							</div>
-						
-						</div>
-					</div>
+			<div className="space-y-2 w-full">
+				<div className=" py-1 px-2 flex space-x-2">
+					<AddCards  title="Phase 1" />
+					<AddCards icon={<PiWaveSineFill />} title="Current" count={phase1current} />
+					<AddCards icon={<BsLightningCharge />} title="Energy" count={phase1energy} />
+					<AddCards bgColor="bg-gray-800" title="frequency" count={phase1frequency} />
+					<AddCards bgColor="bg-blue-800" title="power" count={phase1power} />
+					<AddCards bgColor="bg-blue-800" title="power_factor	" count={phase1power_factor} />
+					<AddCards bgColor="bg-red-800" title="voltage " count={phase1voltage} />
 				</div>
-				<div className="h-3/5 flex flex-wrap ">
-					<div className="w-1/2 p-4 flex flex-wrap">
-						<div className="bg-white h-full rounded-lg w-full">
-							<div className="h-1/6 bg-teal-600 w-full rounded-t-lg text-center text-white py-1 font-[550]">
-								Performance
-							</div>
+				<div className=" py-1 px-2 flex space-x-2 ">
+					<AddCards bgColor="bg-red-800" title="Phase 2" />
+					<AddCards bgColor="bg-yellow-800" title="Current"count={phase2current} />
+					<AddCards bgColor="bg-green-500" title="Energy"count={phase2energy} />
+					<AddCards bgColor="bg-purple-800" title="frequency"count={phase2frequency} />
+					<AddCards bgColor="bg-indigo-800" title="power"count={phase2power} />
+					<AddCards bgColor="bg-pink-800" title="power_factor" count={phase2power_factor}/>
+					<AddCards
+        title="Voltage"
+        count={phase1voltage}
+        bgColor="bg-red-800"
+        gaugeProps={{
+          arc: {
+            subArcs: [
+              { limit: 20, color: '#EA4228', showTick: true },
+              { limit: 40, color: '#F58B19', showTick: true },
+              { limit: 60, color: '#F5CD19', showTick: true },
+              { limit: 100, color: '#5BE12C', showTick: true },
+            ],
+          },
+          value: 50,
+        }}
+      />
+				</div>
+				<div className=" py-1 px-2 flex space-x-2">
+					<AddCards bgColor="bg-red-800" title="Phase 3" />
+					<AddCards bgColor="bg-yellow-800" title="Current" count={phase3current}/>
+					<AddCards bgColor="bg-green-500" title="Energy" count={phase3energy}/>
+					<AddCards bgColor="bg-purple-800" title="frequency" count={phase3frequency}/>
+					<AddCards bgColor="bg-indigo-800" title="power"count={phase3power} />
+					<AddCards bgColor="bg-pink-800" title="power_factor" count={phase3power_factor}/>
+					<AddCards bgColor="bg-red-800" title="voltage" count={phase3voltage}/>
+				</div>
+				<div id="chart">
+					<ReactApexChart
+						options={chartData.options}
+						series={chartData.series}
+						type="bar"
+						height={350}
+					/>
+				</div>
+				<div id="html-dist"></div>
+			</div>
 
-							<ResponsiveContainer width="100%" height="75%">
-								<PieChart>
-									<Pie
-										data={data}
-										cx="50%" 
-										cy="50%"
-										innerRadius={0}
-										outerRadius="80%"
-										paddingAngle={0}
-										dataKey="value" 
-										labelLine={false}
-									>
-										{data.map((_, index) => (
-											<Cell
-												key={`cell-${index}`}
-												fill={COLORS[index % COLORS.length]}
-											/>
-										))}
-							</Pie>
-									<Legend />
-								</PieChart>
-							</ResponsiveContainer>
-						</div>
-					</div>
-					<div className="w-1/2 p-4">
-						<div className="bg-white h-full rounded-lg w-full font-[550] ">
-							<div className="h-1/6 bg-teal-600 w-full rounded-t-lg text-center text-white py-1">
-								Reviews
-							</div>
-							<div className="p-3 flex justify-between">
-								<p>Team Performance </p>
-								<p>90.6%</p>
-							</div>
-							<div className="p-3 flex justify-between">
-								<p>Reviews </p>
-								<p>89.6%</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div className="w-1/5 h-full  p-3 flex flex-wrap">
-				<div className="rounded-lg bg-white flex flex-col h-full w-full flex-wrap justify-center">
-					{images.map((img, index) => (
-						<div className="w-full h-1/4 flex px-10 ">
-							<div className=" w-full h-full p-4 flex"key={index}>
-								{img}
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
 		</>
 	)
 }

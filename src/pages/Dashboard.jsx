@@ -24,7 +24,7 @@ const Dashboard = () => {
 							{/* <Header withSearch="false" /> */}
 						{/* </div> */}
 						<div className="flex h-full w-full bg-gray-100">
-							{   <AgentDashBoard />}
+							{   <AdminDashBoard	 />}
 						</div>
 					</div>
 				</div>
