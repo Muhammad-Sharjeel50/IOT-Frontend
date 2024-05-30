@@ -53,7 +53,7 @@ export default function Sidebar(props) {
     };
 
     return (
-        <div className="h-full">
+        <div className="h-full font-extrabold">
             {/* Mobile Menu Button */}
             <div className="bg-white-200 p-2 flex justify-between items-center lg:hidden">
                 <button onClick={toggleSidebar}>
