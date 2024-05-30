@@ -36,6 +36,7 @@
 		"react-chatbot-kit": "^2.1.2",
 		"react-device-detect": "^2.2.3",
 		"react-dom": "^18.2.0",
+		"react-gauge-chart": "^0.5.1",
 		"react-gauge-component": "^1.2.2",
 		"react-icons": "^4.10.1",
 		"react-modal": "^3.16.1",

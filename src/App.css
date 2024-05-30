@@ -879,3 +879,8 @@ button.btn.btn-danger.dropdown-toggle {
     border: black;
     height: 35px;
 }
+.text{
+
+    font-size: 10px;
+    fill: rgb(173, 172, 171);
+    text-anchor: start;}
