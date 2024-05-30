@@ -353,23 +353,27 @@ const AdminDashBoard = () => {
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase1current}
+			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase1power} />
+            <AddCards icon={<SiPowerbi />} title="power" count={phase1power} unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
               count={phase1energy}
+			  unit="kw/h"
             />
             <AddCards
               icon={<GiLightningFrequency />}
               title="frequency"
               count={phase1frequency}
+			  unit="Hz"
             />
 
             <AddCards
               icon={<TbGeometry />}
               title="power_factor	"
               count={phase1power_factor}
+			  unit="Pf"
             />
           </div>
           <div className=" py-1 px-2 flex space-x-2 ">
@@ -386,23 +390,27 @@ const AdminDashBoard = () => {
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase2current}
+			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase2power} />
+            <AddCards icon={<SiPowerbi />} title="power" count={phase2power}unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
               count={phase2energy}
+			  unit="kw/h"
             />
             <AddCards
               icon={<GiLightningFrequency />}
               title="frequency"
               count={phase2frequency}
+			  unit="Hz"
             />
 
             <AddCards
               icon={<TbGeometry />}
               title="power_factor"
               count={phase2power_factor}
+			  unit="Pf"
             />
           </div>
           <div className=" py-1 px-2 flex space-x-2">
@@ -418,23 +426,28 @@ const AdminDashBoard = () => {
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase3current}
+			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase3power} />
+            <AddCards icon={<SiPowerbi />} title="power" count={phase3power}unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
               count={phase3energy}
+			  unit="kw/h"
             />
             <AddCards
               icon={<GiLightningFrequency />}
               title="frequency"
               count={phase3frequency}
+			  unit="Hz"
             />
 
             <AddCards
               icon={<TbGeometry />}
               title="power_factor"
               count={phase3power_factor}
+			  unit="Pf"
+
             />
           </div>
         </div>
