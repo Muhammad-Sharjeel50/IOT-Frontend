@@ -16,189 +16,190 @@ const AgentView = () => {
 	const [sent, setSent] = useState(false)
 	const endPoint = process.env.REACT_APP_BASE_URL
 	const userData = JSON.parse(localStorage.getItem('user'))
-	let room = userData.email
+	// let room = userData.email
 	const [customers, setCustomers] = useState([])
 	const [activeIndex, setActiveIndex] = useState('1')
 	const [activeCustomer, setActiveCustomer] = useState()
 	const [channel, setChannel] = useState(null)
-	const [roomName, setRoomName] = useState(room)
+	// const [roomName, setRoomName] = useState(room)
 	const [token, setToken] = useState('')
 	const [customerToken, setCustomerToken] = useState('')
 	const [link, setLink] = useState('')
 	const [showButton, setShowButton] = useState(false)
-	const agentDepartment = userData?.department
+	// const agentDepartment = userData?.department
 
-	const totalCustomers = customers.length
-	const navigate = useNavigate()
-	const [isVoiceCallModalOpen, setIsVoiceCallModalOpen] = useState(false)
-	const fetchCustomers = async () => {
-		let currentDate = new Date().toISOString().split('T')[0]; 
-		let config = {
-			method: 'get',
-			url: `http://${endPoint}:8000/core/customer/?department=${agentDepartment.toLowerCase()}`,
-		};
+	// const totalCustomers = customers.length
+	// const navigate = useNavigate()
+	// const [isVoiceCallModalOpen, setIsVoiceCallModalOpen] = useState(false)
+	// const fetchCustomers = async () => {
+	// 	let currentDate = new Date().toISOString().split('T')[0]; 
+	// 	let config = {
+	// 		method: 'get',
+	// 		url: `http://${endPoint}:8000/core/customer/?department=${agentDepartment.toLowerCase()}`,
+	// 	};
 	
-		await axios
-			.request(config)
-			.then((response) => {
-				if (response.status === 200) {
-					let todayCustomers = []; 
-					let otherCustomers = [];
-					response.data.data.forEach((customer) => {
-						if (!customer.is_resolved) {
-							if (customer.date === currentDate) {
-								todayCustomers.push(customer);
-							} else {
-								otherCustomers.push(customer);
-							}
-						}
-					});
+	// 	await axios
+	// 		.request(config)
+	// 		.then((response) => {
+	// 			if (response.status === 200) {
+	// 				let todayCustomers = []; 
+	// 				let otherCustomers = [];
+	// 				response.data.data.forEach((customer) => {
+	// 					if (!customer.is_resolved) {
+	// 						if (customer.date === currentDate) {
+	// 							todayCustomers.push(customer);
+	// 						} else {
+	// 							otherCustomers.push(customer);
+	// 						}
+	// 					}
+	// 				});
 	
-					setCustomers([...todayCustomers, ...otherCustomers]);
-				}
-			})
-			.catch((error) => {
-				Swal.fire({
-					icon: 'error',
-					title: error,
-					text: 'An error occurred.',
-					showCloseButton: true,
-				});
-			});
-	}; 
+	// 				setCustomers([...todayCustomers, ...otherCustomers]);
+	// 			}
+	// 		})
+	// 		.catch((error) => {
+	// 			Swal.fire({
+	// 				icon: 'error',
+	// 				title: error,
+	// 				text: 'An error occurred.',
+	// 				showCloseButton: true,
+	// 			});
+	// 		});
+	// }; 
 
-	const getToken = async (identity) => {
-		const response = await axios.get(
-			`http://${endPoint}:8000/core/twilio_video_access_token?user_identity=${identity}&room_name=${roomName}`
-		)
-		const { data } = response
-		let token = data.token
+	// const getToken = async (identity) => {
+	// 	const response = await axios.get(
+	// 		`http://${endPoint}:8000/core/twilio_video_access_token?user_identity=${identity}&room_name=${roomName}`
+	// 	)
+	// 	const { data } = response
+	// 	let token = data.token
 
-		return token
-	}
+	// 	return token
+	// }
 
-	const handleVideoCall = () => {
-		const url = token && `/videocall?token=${token}&roomname=${roomName}`
-		navigate(url, { state: { activeCustomer } })
-	}
+	// const handleVideoCall = () => {
+	// 	const url = token && `/videocall?token=${token}&roomname=${roomName}`
+	// 	navigate(url, { state: { activeCustomer } })
+	// }
 
-	const handleVoiceCall = () => {
-		setIsVoiceCallModalOpen(true)
-	}
+	// const handleVoiceCall = () => {
+	// 	setIsVoiceCallModalOpen(true)
+	// }
 
-	const closeVoiceCallModal = () => {
-		setIsVoiceCallModalOpen(false)
-	}
+	// const closeVoiceCallModal = () => {
+	// 	setIsVoiceCallModalOpen(false)
+	// }
 
-	useEffect(() => {
-		fetchCustomers()
-		setRoomName(userData.email)
-		getToken(userData.email).then((token) => {
-			setToken(token)
-			console.log("token",token)
+	// useEffect(() => {
+	// 	fetchCustomers()
+	// 	setRoomName(userData.email)
+	// 	getToken(userData.email).then((token) => {
+	// 		setToken(token)
+	// 		console.log("token",token)
 
-		})
+	// 	})
 
-		const intervalId = setInterval(() => {
-			fetchCustomers()
-		}, 10000)
+	// 	const intervalId = setInterval(() => {
+	// 		fetchCustomers()
+	// 	}, 10000)
 
-		return () => {
-			clearInterval(intervalId)
-			channel && channel.removeAllListeners()
-		}
-	}, [activeCustomer])
+	// 	return () => {
+	// 		clearInterval(intervalId)
+	// 		channel && channel.removeAllListeners()
+	// 	}
+	// }, [activeCustomer])
 
-	const handleResolve = async (customer) => {
-		let config = {
-			method: 'patch',
-			url: `http://${endPoint}:8000/core/customer/?customer_id=${customer.id}`,
-			headers: {
-				'content-type': 'application/json',
-			},
-			data: {
-				agent_id: userData.id,
-				is_resolved: true,
-			},
-		}
+	// const handleResolve = async (customer) => {
+	// 	let config = {
+	// 		method: 'patch',
+	// 		url: `http://${endPoint}:8000/core/customer/?customer_id=${customer.id}`,
+	// 		headers: {
+	// 			'content-type': 'application/json',
+	// 		},
+	// 		data: {
+	// 			agent_id: userData.id,
+	// 			is_resolved: true,
+	// 		},
+	// 	}
 
-		await axios
-			.request(config)
-			.then((response) => {
-				if (response.status === 200) {
-					Swal.fire({
-						icon: 'success',
-						title: 'Resloved Queries Successfully',
-						text: response.data.message,
-						showCloseButton: true,
-					}).then((result) => {
-						if (result.isConfirmed) {
-							fetchCustomers()
-						}
-					})
-				} else {
-					Swal.fire({
-						icon: 'error',
-						title: 'Query Resolution Failed',
-						text: 'Cannot  Reslove Queries',
-						showCloseButton: true,
-					})
-					fetchCustomers()
-					setActiveCustomer('')
-				}
-			})
-			.catch(() => {
-				Swal.fire({
-					icon: 'error',
-					title: 'Error',
-					text: 'An error occurred while resolving the customer.',
-					showCloseButton: true,
-				})
-			})
-	}
+	// 	await axios
+	// 		.request(config)
+	// 		.then((response) => {
+	// 			if (response.status === 200) {
+	// 				Swal.fire({
+	// 					icon: 'success',
+	// 					title: 'Resloved Queries Successfully',
+	// 					text: response.data.message,
+	// 					showCloseButton: true,
+	// 				}).then((result) => {
+	// 					if (result.isConfirmed) {
+	// 						fetchCustomers()
+	// 					}
+	// 				})
+	// 			} else {
+	// 				Swal.fire({
+	// 					icon: 'error',
+	// 					title: 'Query Resolution Failed',
+	// 					text: 'Cannot  Reslove Queries',
+	// 					showCloseButton: true,
+	// 				})
+	// 				fetchCustomers()
+	// 				setActiveCustomer('')
+	// 			}
+	// 		})
+	// 		.catch(() => {
+	// 			Swal.fire({
+	// 				icon: 'error',
+	// 				title: 'Error',
+	// 				text: 'An error occurred while resolving the customer.',
+	// 				showCloseButton: true,
+	// 			})
+	// 		})
+	// }
 
-	const handleActiveCustomer = (customer, index) => {
-		setActiveCustomer(customer)
-		setActiveIndex(index)
-	}
+	// const handleActiveCustomer = (customer, index) => {
+	// 	setActiveCustomer(customer)
+	// 	setActiveIndex(index)
+	// }
 
-	const generateShareableLink = async () => {
-		try {
-			const shareableLink =
-				customerToken &&
-				`http:localhost:3000/videocall/?token=${customerToken}&room_name=${roomName}`
+	// const generateShareableLink = async () => {
+	// 	try {
+	// 		const shareableLink =
+	// 			customerToken &&
+	// 			`http:localhost:3000/videocall/?token=${customerToken}&room_name=${roomName}`
 
-			console.log('Shareable Link:', shareableLink)
-			setLink(shareableLink)
-		} catch (error) {
-			Swal.fire({
-				icon: 'error',
-				title: error,
-				text: 'An error occurred during Shareable Link.',
-				showCloseButton: true,
-			})
-		}
-	}
+	// 		console.log('Shareable Link:', shareableLink)
+	// 		setLink(shareableLink)
+	// 	} catch (error) {
+	// 		Swal.fire({
+	// 			icon: 'error',
+	// 			title: error,
+	// 			text: 'An error occurred during Shareable Link.',
+	// 			showCloseButton: true,
+	// 		})
+	// 	}
+	// }
 
-	useEffect(() => {
-		if (activeCustomer?.customer_query_service === 'Video Call') {
-			let cEmail = activeCustomer.customer_email
-			setShowButton(true)
-			getToken(cEmail).then((token) => {
-				setCustomerToken(token)
-			})
-		} else {
-			setShowButton(false)
-		}
-	}, [activeCustomer])
+	// useEffect(() => {
+	// 	if (activeCustomer?.customer_query_service === 'Video Call') {
+	// 		let cEmail = activeCustomer.customer_email
+	// 		setShowButton(true)
+	// 		getToken(cEmail).then((token) => {
+	// 			setCustomerToken(token)
+	// 		})
+	// 	} else {
+	// 		setShowButton(false)
+	// 	}
+	// }, [activeCustomer])
 
 	return (
 		<div className="home border flex">
+				<Sidbar />
 			<div className=" flex flex-wrap bg-white rounded-xl h-full w-full">
 				<div className=" w-2/12">
-					<Sidbar />
+				
 				</div>
-				<div className="w-10/12 h-full flex-col flex flex-wrap rounded-r-lg">
+				{/* <div className="w-10/12 h-full flex-col flex flex-wrap rounded-r-lg">
 					<div className="h-1/6">
 						<AgentHeaderQueue queue={totalCustomers} />
 					</div>
@@ -388,7 +389,7 @@ const AgentView = () => {
 							</div>
 						</div>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	)

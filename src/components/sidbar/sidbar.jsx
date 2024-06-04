@@ -11,11 +11,12 @@ export default function Sidebar(props) {
 
     const sidebarItems = [
         {
-            title: 'All Users',
+            title: 'Phase Data',
             key: 'All_Users',
             icon: <MdSupervisorAccount className="text-2xl text-black" />,
             link: '/home',
         },
+
         {
             title: 'Configure Bot',
             key: 'Configure_Bot',
@@ -40,11 +41,17 @@ export default function Sidebar(props) {
             icon: <FaChessQueen className="text-2xl text-black" />,
             link: '/connecttodevice',
         },
+        // {
+        //     title: 'Profile Update',
+        //     key: 'Profile_Update',
+        //     icon: <MdUpdate className="text-2xl text-black mt-2" />,
+        //     link: '/profile/update', // Adjust this link as needed
+        // },
         {
-            title: 'Profile Update',
-            key: 'Profile_Update',
+            title: 'Graphs',
+            key: 'activeagent',
             icon: <MdUpdate className="text-2xl text-black mt-2" />,
-            link: '/profile/update', // Adjust this link as needed
+            link: '/activeagent', // Adjust this link as needed
         },
     ];
 
@@ -53,7 +60,7 @@ export default function Sidebar(props) {
     };
 
     return (
-        <div className="h-full font-extrabold">
+        <div className="h-full font-bold">
             {/* Mobile Menu Button */}
             <div className="bg-white-200 p-2 flex justify-between items-center lg:hidden">
                 <button onClick={toggleSidebar}>

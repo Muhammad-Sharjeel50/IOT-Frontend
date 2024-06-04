@@ -40,9 +40,11 @@ export default function App() {
         } />
 
         <Route path="/botConfiguration" element={
-          <PermissionWrapper>
+          // <PermissionWrapper>
             <BotConfiguration />
-          </PermissionWrapper>} />
+          // </PermissionWrapper>
+        }
+           />
 
         <Route path="/home" element={
            < Home />
@@ -78,9 +80,10 @@ export default function App() {
         <Route path="/" element={<Clientwebsite />} />
 
         <Route path="/agent/home" element={
-          <PermissionWrapper>
+          // <PermissionWrapper>
             <AgentView />
-          </PermissionWrapper>} />
+          // </PermissionWrapper>
+        } />
 
 
 

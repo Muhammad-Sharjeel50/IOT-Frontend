@@ -890,4 +890,10 @@ button.btn.btn-danger.dropdown-toggle {
 
     font-size: 10px;
     fill: rgb(173, 172, 171);
-    text-anchor: start;}
+    text-anchor: start;
+}
+.card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Adjust the value as needed */
+}

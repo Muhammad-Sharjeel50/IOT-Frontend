@@ -10,26 +10,8 @@ export default function Home() {
 	const [data, setData] = useState([])
 	const [filteredData, setFilteredData] = useState([])
 
-	const fetchData = async () => {
-		setIsAdmin(JSON.parse(localStorage.getItem('is_admin')))
-		try {
-			const url = `http://${endPoint}:8000/core/user/`
-			const response = await axios.get(url)
-			setData(response.data.data)
-			setFilteredData(response.data.data)
-		} catch (error) {
-			Swal.fire({
-				icon: 'error',
-				title: 'Error fetching data',
-				text: error,
-				showCloseButton: true,
-			})
-		}
-	}
+	
 
-	useEffect(() => {
-		fetchData()
-	}, [])
 
 	return (
 		<div className="home border flex">
@@ -39,14 +21,8 @@ export default function Home() {
 					<Sidbar isAdmin={isAdmin} />
 				</div>
 				<div className="w-10/12 h-full flex-col flex flex-wrap rounded-r-lg">
-					<div className="h-1/6">
-						<Header
-							withSearch="true"
-							allUsers={data}
-							setFiltered={setFilteredData}
-						/>
-					</div>
-					<div className="flex h-5/6 flex-wrap">
+				
+					<div className=" h-5/6 ">
 						<AllUser
 							isAdmin={isAdmin}
 							filteredData={filteredData}

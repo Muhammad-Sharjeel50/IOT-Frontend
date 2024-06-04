@@ -8,6 +8,7 @@ function AddUsers() {
 
   const endPoint = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem('user-token')
+  const[deviceid,setDeviceid]=useState(null)
   const [name, setname] = useState("");
   const [email, setEmail] = useState("");
   const [phone_number, setPhone_number] = useState("");
@@ -23,7 +24,7 @@ function AddUsers() {
 
   const handleRegistration = async () => {
 
-    if (!name || !email || !phone_number || !department || !password || !role) {
+    if (!deviceid ||!name ||!email ||  !password ) {
       Swal.fire({
         icon: 'error',
         title: 'Fields Required',
@@ -81,13 +82,9 @@ function AddUsers() {
       const response = await axios.post(
         `http://${endPoint}:8000/core/register/`,
         {
+          deviceid,
           name,
           email,
-          phone_number,
-          department,
-          role_or_permission: role,
-          picture,
-          isActive,
           password,
         }
       );
@@ -182,6 +179,17 @@ function AddUsers() {
           <div className="input-container py-1">
             <input
               type="text"
+              value={deviceid}
+              onChange={(e) => setDeviceid(e.target.value)}
+              onKeyDown={handleKeyDown}
+
+              placeholder="DeviceId*"
+              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
+            />
+          </div>
+          <div className="input-container py-1">
+            <input
+              type="text"
               value={name}
               onChange={(e) => setname(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -202,31 +210,7 @@ function AddUsers() {
               className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
             />
           </div>
-          <div className="input-container py-1">
-            <input
-              type="phone"
-              value={phone_number}
-              onChange={(e) => setPhone_number(e.target.value)}
-              onKeyDown={handleKeyDown}
-
-              placeholder="Contact no *"
-              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-            />
-          </div>
-          <div className="input-container py-1">
-            <select
-              className="bg-blue-50 border border-blue-500  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-              onChange={(e) => setDepartment(e.target.value)}
-            >
-              <option selected>Choose a department</option>
-              {departments.map((dept, index) => (
-                <option key={index} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="input-container pt-4">
+          <div className="input-container pt-2">
             <input
               type="text"
               value={password}
@@ -236,19 +220,7 @@ function AddUsers() {
               className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
             />
           </div>
-          <div className="input-container py-1">
-            <select
-              className="bg-blue-50 border border-blue-500  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option selected>Choose a Roles</option>
-              {roles?.map((rol, index) => (
-                <option key={index} value={rol.title}>
-                  {rol.title}
-                </option>
-              ))}
-            </select>
-          </div>
+         
           <div className="grid gap-2 ">
             <button
             className="bg-sky-600 mx-auto mt-4 rounded-xl scale-100 active:scale-90 cursor-pointer px-8 py-2 active:bg-blue-500 focus:bg-blue-700 focus:ring text-white text-xl font-medium"
