@@ -1,95 +1,152 @@
-import axios from 'axios'
-import React, { useState } from 'react'
-import Swal from 'sweetalert2'
-import { BiSolidLock } from 'react-icons/bi'
-import { BsTrash3Fill } from 'react-icons/bs'
-import { FaEdit } from 'react-icons/fa'
-import { HiOutlineLockOpen } from 'react-icons/hi'
-import { IoMdKey } from 'react-icons/io'
-import ReactPaginate from 'react-paginate'
-import { useNavigate } from 'react-router-dom'
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import ReactPaginate from 'react-paginate';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 
-const itemsPerPage = 30 // Number of items to display per page
+dayjs.extend(isBetween);
 
-export default function AllUser({ isAdmin, filteredData, setUsers }) {
-	const endPoint = process.env.REACT_APP_BASE_URL
-	const navigate = useNavigate()
+const itemsPerPage = 30;
 
-	const dummyData = [
-		{ sno: 1, date: '2024/12/3',voltage:'230v', current: '10A', power: '5kW', energy: '50kWh', frequency: '60Hz', powerFactor: '0.9', gerneratorusage: "30w",   },
-		{ sno: 2, date: '2024/12/3', voltage:'230v',current: '12A', power: '6kW', energy: '60kWh', frequency: '50Hz', powerFactor: '0.8', gerneratorusage: "30w",  },
-		{ sno: 3, date: '2024/12/3',voltage:'230v', current: '14A', power: '7kW', energy: '70kWh', frequency: '55Hz', powerFactor: '0.85', gerneratorusage: "30w",   },
-		{ sno: 4, date: '2024/12/3',voltage:'230v', current: '16A', power: '8kW', energy: '80kWh', frequency: '57Hz', powerFactor: '0.9', gerneratorusage: "30w",  },
-		{ sno: 5, date: '2024/12/3',voltage:'230v', current: '18A', power: '9kW', energy: '90kWh', frequency: '53Hz', powerFactor: '0.95', gerneratorusage: "30w", },
-		{ sno: 6, date: '2024/12/3', voltage:'230v',current: '20A', power: '10kW', energy: '100kWh', frequency: '58Hz', powerFactor: '0.92', gerneratorusage: "30w",  },
-		{ sno: 7, date: '2024/12/3',voltage:'230v', current: '22A', power: '11kW', energy: '110kWh', frequency: '59Hz', powerFactor: '0.94', gerneratorusage: "30w",   },
-		{ sno: 8, date: '2024/12/3',voltage:'230v', current: '24A', power: '12kW', energy: '120kWh', frequency: '56Hz', powerFactor: '0.93', gerneratorusage: "30w", },
-		{ sno: 9, date: '2024/12/3',voltage:'230v', current: '26A', power: '13kW', energy: '130kWh', frequency: '54Hz', powerFactor: '0.91', gerneratorusage: "30w",},
-		{ sno: 10, date: '2024/12/3',voltage:'230v', current: '28A', power: '14kW', energy: '140kWh', frequency: '52Hz', powerFactor: '0.89', gerneratorusage: "30w", },
-		{ sno: 11, date: '2024/12/3',voltage:'230v', current: '10A', power: '5kW', energy: '50kWh', frequency: '60Hz', powerFactor: '0.9', gerneratorusage: "30w",   },
-		{ sno: 12, date: '2024/12/3',voltage:'230v', current: '12A', power: '6kW', energy: '60kWh', frequency: '50Hz', powerFactor: '0.8', gerneratorusage: "30w", },
-		{ sno: 13, date: '2024/12/3',voltage:'230v', current: '14A', power: '7kW', energy: '70kWh', frequency: '55Hz', powerFactor: '0.85', gerneratorusage: "30w", },
-		{ sno: 14, date: '2024/12/3',voltage:'230v', current: '16A', power: '8kW', energy: '80kWh', frequency: '57Hz', powerFactor: '0.9', gerneratorusage: "30w",  },
-		{ sno: 15, date: '2024/12/3',voltage:'230v', current: '18A', power: '9kW', energy: '90kWh', frequency: '53Hz', powerFactor: '0.95', gerneratorusage: "30w",   },
-		{ sno: 16, date: '2024/12/3',voltage:'230v', current: '20A', power: '10kW', energy: '100kWh', frequency: '58Hz', powerFactor: '0.92', gerneratorusage: "30w",  },
-		{ sno: 17, date: '2024/12/3',voltage:'230v', current: '22A', power: '11kW', energy: '110kWh', frequency: '59Hz', powerFactor: '0.94', gerneratorusage: "30w",  },
-		{ sno: 18, date: '2024/12/3',voltage:'230v', current: '24A', power: '12kW', energy: '120kWh', frequency: '56Hz', powerFactor: '0.93', gerneratorusage: "30w",   },
-		{ sno: 19, date: '2024/12/3',voltage:'230v', current: '26A', power: '13kW', energy: '130kWh', frequency: '54Hz', powerFactor: '0.91', gerneratorusage: "30w",  },
-		{ sno: 20, date: '2024/12/3',voltage:'230v', current: '28A', power: '14kW', energy: '140kWh', frequency: '52Hz', powerFactor: '0.89', gerneratorusage: "30w",   },
-		{ sno: 11, date: '2024/12/3', current: '10A', power: '5kW', energy: '50kWh', frequency: '60Hz', powerFactor: '0.9', gerneratorusage: "30w", },
-		{ sno: 12, date: '2024/12/3', current: '12A', power: '6kW', energy: '60kWh', frequency: '50Hz', powerFactor: '0.8', gerneratorusage: "30w",   },
-		{ sno: 13, date: '2024/12/3', current: '14A', power: '7kW', energy: '70kWh', frequency: '55Hz', powerFactor: '0.85', gerneratorusage: "30w",  },
-		{ sno: 14, date: '2024/12/3', current: '16A', power: '8kW', energy: '80kWh', frequency: '57Hz', powerFactor: '0.9', gerneratorusage: "30w",  },
-		{ sno: 15, date: '2024/12/3', current: '18A', power: '9kW', energy: '90kWh', frequency: '53Hz', powerFactor: '0.95', gerneratorusage: "30w",   },
-		{ sno: 16, date: '2024/12/3', current: '20A', power: '10kW', energy: '100kWh', frequency: '58Hz', powerFactor: '0.92', gerneratorusage: "30w",   },
-		{ sno: 17, date: '2024/12/3', current: '22A', power: '11kW', energy: '110kWh', frequency: '59Hz', powerFactor: '0.94', gerneratorusage: "30w",   },
-	]
+export default function AllUser({ isAdmin, setUsers }) {
+    const endPoint = process.env.REACT_APP_BASE_URL;
+    const navigate = useNavigate();
+    const [data, setData] = useState([]); // State to hold the fetched data
+    const [filteredData, setFilteredData] = useState([]); // State to hold the filtered data
+    const [currentPage, setCurrentPage] = useState(0); // State to handle pagination
+    const [timeRange, setTimeRange] = useState(0); // Default time range to Today
 
-	return (
-		<div className="h-full flex flex-col">
-			<div className="flex-grow overflow-x-auto mt-16">
-				<div className="shadow-2xl rounded-lg">
-					<h1 className="text-xl font-bold mx-auto">Three Phase Data</h1>
+    const fetchDatas = async () => {
+        try {
+            const response = await axios.get(
+                "http://192.168.137.105:5000/api/sensors/data/08:F9:E0:5F:AC:66"
+            );
+            const data = response.data;
+            console.log("Fetched Data:", data[0].three_phase);
 
-					<div className="overflow-y-auto max-h-[30rem]">
-						<table className="min-w-full text-center text-white font-medium border-collapse mt-2">
-							<thead className="bg-[#3E97CF] sticky top-0 z-10">
-								<tr>
-									<th className="border px-2 md:px-4">Sno</th>
-									
-									<th className="border px-2 md:px-4">Date</th>
-									<th className="border px-2 md:px-4">Voltage</th>
-									<th className="border px-2 md:px-4">Current</th>
-									<th className="border px-2 md:px-4">Power</th>
-									<th className="border px-2 md:px-4">Energy</th>
-									<th className="border px-2 md:px-4">Frequency</th>
-									<th className="border px-2 md:px-4">Power Factor</th>
-									<th className="border px-2 md:px-4">Generator Usage</th>	
-								</tr>
-							</thead>
-							<tbody className="text-gray-700">
-								{dummyData.map((item, index) => (
-									<tr key={index}>
-										<td className="border px-2 md:px-4">{item.sno}</td>
-										<td className="border px-2 md:px-4">{item.date}</td>
-										<td className="border px-2 md:px-4">{item.voltage}</td>
-										<td className="border px-2 md:px-4">{item.current}</td>
-										<td className="border px-2 md:px-4">{item.power}</td>
-										<td className="border px-2 md:px-4">{item.energy}</td>
-										<td className="border px-2 md:px-4">{item.frequency}</td>
-										<td className="border px-2 md:px-4">{item.powerFactor}</td>
-										<td className="border px-2 md:px-4">{item.gerneratorusage}</td>
-										
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		</div>
+            if (data.length > 0) {
+                setData(data[0].three_phase);
+                filterDataByTimeRange(data[0].three_phase, timeRange); // Filter the data initially
+            } else {
+                console.warn("No data available");
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
-		// </div>	
+    useEffect(() => {
+        fetchDatas();
+    }, []);
 
-	)
+    useEffect(() => {
+        filterDataByTimeRange(data, timeRange);
+    }, [data, timeRange]);
+
+    const handlePageClick = (data) => {
+        setCurrentPage(data.selected);
+    }
+
+    const handleTimeRangeChange = (event) => {
+        const selectedRange = parseInt(event.target.value);
+        setTimeRange(selectedRange);
+        filterDataByTimeRange(data, selectedRange);
+    }
+
+    const filterDataByTimeRange = (data, range) => {
+        const now = dayjs();
+        let startDate, endDate;
+
+        if (range === 0) { // Today
+            startDate = now.startOf('day');
+            endDate = now.endOf('day');
+        } else {
+            startDate = now.subtract(range, 'day').startOf('day');
+            endDate = now.subtract(1, 'day').endOf('day');
+        }
+
+        const filtered = data.filter(item => dayjs(item.reading_date).isBetween(startDate, endDate, null, '[]'));
+        setFilteredData(filtered);
+        setCurrentPage(0); // Reset to the first page after filtering
+    }
+
+    const offset = currentPage * itemsPerPage;
+    const currentPageData = filteredData.slice(offset, offset + itemsPerPage);
+    const pageCount = Math.ceil(filteredData.length / itemsPerPage);
+
+    return (
+        <div className="h-full flex flex-col">
+            <div className="flex-grow overflow-x-auto mt-16">
+                <div className="shadow-2xl rounded-lg p-4 bg-white">
+                    <h1 className="text-xl font-bold mx-auto text-center mb-4">Three Phase Data</h1>
+                    <div className="my-4 flex justify-center">
+                        <label htmlFor="timeRange" className="mr-2">Select Time Range:</label>
+                        <select id="timeRange" value={timeRange} onChange={handleTimeRangeChange} className="p-2 border rounded">
+                            <option value={0}>Today</option>
+                            <option value={1}>Last 1 Day</option>
+                            <option value={7}>Last 7 Days</option>
+                            <option value={30}>Last 30 Days</option>
+                            <option value={90}>Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div className="overflow-y-auto max-h-[40rem]">
+                        <table className="min-w-full text-center text-black font-medium border-collapse mt-2">
+                            <thead className="bg-[#3E97CF] sticky top-0 z-10 text-white">
+                                <tr>
+                                    <th className="border px-2 md:px-4 py-2">Sno</th>
+                                    <th className="border px-2 md:px-4 py-2">Date</th>
+                                    <th className="border px-2 md:px-4 py-2">Voltage</th>
+                                    <th className="border px-2 md:px-4 py-2">Current</th>
+                                    <th className="border px-2 md:px-4 py-2">Power</th>
+                                    <th className="border px-2 md:px-4 py-2">Energy</th>
+                                    <th className="border px-2 md:px-4 py-2">Frequency</th>
+                                    <th className="border px-2 md:px-4 py-2">Power Factor</th>
+                                    <th className="border px-2 md:px-4 py-2">Reactive Power</th>
+                                    <th className="border px-2 md:px-4 py-2">Apparent Power</th>
+                                    <th className="border px-2 md:px-4 py-2">Generator Usage</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-gray-700">
+                                {currentPageData.map((item, index) => (
+                                    <tr key={index} className="odd:bg-white even:bg-gray-100">
+                                        <td className="border px-2 md:px-4 py-2">{index + 1 + offset}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.reading_date}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.voltage.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.current.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.power.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.energy.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.frequency.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.power_factor.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.reactive_power.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.apparent_power.toFixed(2)}</td>
+                                        <td className="border px-2 md:px-4 py-2">{item.generator_usage}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <ReactPaginate
+                    previousLabel={"Previous"}
+                    nextLabel={"Next"}
+                    breakLabel={"..."}
+                    breakClassName={"break-me"}
+                    pageCount={pageCount}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={5}
+                    onPageChange={handlePageClick}
+                    containerClassName={"pagination flex justify-center mt-4"}
+                    pageClassName={"page-item"}
+                    pageLinkClassName={"page-link px-3 py-1 border rounded mx-1"}
+                    previousClassName={"page-item"}
+                    previousLinkClassName={"page-link px-3 py-1 border rounded mx-1"}
+                    nextClassName={"page-item"}
+                    nextLinkClassName={"page-link px-3 py-1 border rounded mx-1"}
+                    activeClassName={"active"}
+                    activeLinkClassName={"bg-blue-500 text-white"}
+                />
+            </div>
+        </div>
+    );
 }

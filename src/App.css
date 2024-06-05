@@ -896,4 +896,5 @@ button.btn.btn-danger.dropdown-toggle {
     display: flex;
     flex-direction: column;
     gap: 10px; /* Adjust the value as needed */
+	width: 195px;
 }

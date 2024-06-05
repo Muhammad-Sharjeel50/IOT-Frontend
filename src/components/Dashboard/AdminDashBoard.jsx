@@ -34,33 +34,29 @@ const AdminDashBoard = () => {
   const [phase3voltage, setVoltagephase3] = useState([])
   const [apparent,setApparent]=useState([])
   const [reactive,setReactive]=useState([])
-
+  const[threephasevoltage,setThreephasevoltage]=useState([])
   const [frequency,setFrequency]=useState([])
 
   const [powerfactor,setPowerfactor]=useState([])
-
-
-setTimeout(() => {
-    fetchData();
-  }, 1000);
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1;
+  const todayDate = `${currentDate.getFullYear()}-${
+	currentDate.getMonth() + 1
+  }-${currentDate.getDate()}`;
 
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        "http://34.224.21.199:5000/api/sensors/data/24:0A:C4:7B:2E:14-1100"
+        "http://34.224.21.199:5000/api/sensors/data/08:F9:E0:5F:AC:66"
       );
       const data = response.data;
-      console.log("data================>", data);
-	  console.log("newdata=============================>",data[0].three_phase[0].apparent_power)
       if (data.length > 0) {
         const lastIndex = data.length - 1;
         const latestData = data[lastIndex];
 
-
 		if (latestData.phase1 && latestData.phase1.length > 0) {
           const lastIndexPhase1 = latestData.phase1.length - 1;
           const phase1Data = latestData.phase1[lastIndexPhase1];
-          console.log("Last Index Phase1 Data:", phase1Data);
 
           setCurrentphase1(phase1Data.current.toFixed(2));
           setEnergyphase1(phase1Data.energy.toFixed(2));
@@ -75,7 +71,6 @@ setTimeout(() => {
         if (latestData.phase2 && latestData.phase2.length > 0) {
           const lastIndexPhase2 = latestData.phase2.length - 1;
           const phase2Data = latestData.phase2[lastIndexPhase2];
-          console.log("Last Index Phase2 Data:", phase2Data);
 
           setCurrentphase2(phase2Data.current.toFixed(2));
           setEnergyphase2(phase2Data.energy.toFixed(2));
@@ -88,7 +83,6 @@ setTimeout(() => {
         if (latestData.phase3 && latestData.phase3.length > 0) {
           const lastIndexPhase3 = latestData.phase3.length - 1;
           const phase3Data = latestData.phase3[lastIndexPhase3];
-          console.log("Last Index Phase3 Data:", phase3Data);
 
           setCurrentphase3(phase3Data.current.toFixed(2));
           setEnergyphase3(phase3Data.energy.toFixed(2));
@@ -101,15 +95,13 @@ setTimeout(() => {
 
 		if (latestData.three_phase && latestData.three_phase.length > 0) {
 			const latestThreePhaseData = latestData.three_phase[latestData.three_phase.length - 1]; 
-			console.log("Latest Three Phase Data:", latestThreePhaseData);
 		
-			// Set the state for three_phase data
 			setApparent(latestThreePhaseData.apparent_power.toFixed(2));
 			setReactive(latestThreePhaseData.reactive_power.toFixed(2));
-      
+      setThreephasevoltage(latestThreePhaseData.voltage.toFixed(2))
 			setFrequency(latestThreePhaseData.frequency.toFixed(2));
 			setPowerfactor(latestThreePhaseData.power_factor.toFixed(2));
-			// Add more state setters for other data if needed
+		
 		} else {
 			console.warn("No three_phase data available");
 		}
@@ -170,7 +162,7 @@ setTimeout(() => {
     fill: {
       type: "gradient",
       gradient: {
-        shade: "light",
+        shade: "blue",
         shadeIntensity: 0.4,
         inverseColors: false,
         opacityFrom: 1,
@@ -178,6 +170,7 @@ setTimeout(() => {
         stops: [0, 50, 53, 91],
       },
     },
+	colors: ['#00008B'],
     labels: ["Average Results"],
   };
 
@@ -245,9 +238,10 @@ setTimeout(() => {
         "http://34.224.21.199:5000/api/sensors/data/08:F9:E0:5F:AC:66"
       );
       const data = response.data;
+
       const filterAndSumPower = (phaseData) => {
         const filteredData = phaseData.filter(
-          (item) => item.reading_date === "2024-05-29"
+          (item) => item.reading_date == todayDate
         );
 
         const powerData = Array(24).fill(0);
@@ -263,18 +257,17 @@ setTimeout(() => {
       };
 
       if (data.length > 0) {
-        console.log("In");
         const powerDataPhase1 = filterAndSumPower(data[0].phase1);
         const powerDataPhase2 = filterAndSumPower(data[0].phase2);
         const powerDataPhase3 = filterAndSumPower(data[0].phase3);
-        console.log("powerDataPhase1", powerDataPhase1);
+		const three_phaseData = filterAndSumPower(data[0].three_phase);
         setChartData((prevState) => ({
 			 ...prevState,
              series: [
             { name: "Phase 1", data: powerDataPhase1 },
             { name: "Phase 2", data: powerDataPhase2 },
             { name: "Phase 3", data: powerDataPhase3 },
-			{name:"threephase",data:powerDataPhase3}
+			{name:"threephase", data: three_phaseData}
           ],
         }));
       } else {
@@ -307,16 +300,12 @@ setTimeout(() => {
       };
 
       if (data.length > 0) {
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth() + 1;
-        const todayDate = `${currentDate.getFullYear()}-${
-          currentDate.getMonth() + 1
-        }-${currentDate.getDate()}`;
+      
 
         const monthlyFilterCondition = (item) =>
           new Date(item.reading_date).getMonth() + 1 === currentMonth;
         const dailyFilterCondition = (item) =>
-          item.reading_date === "2024-05-29";
+          item.reading_date == todayDate;
 
         const phase1MonthlyUsage = calculateUsage(
           data[0].phase1,
@@ -364,9 +353,20 @@ setTimeout(() => {
     }
   };
 
+
   useEffect(() => {
-    fetchDatas();
-    fetchDailyAndMonthlyData();
+	fetchData();
+	fetchDatas();
+	fetchDailyAndMonthlyData();
+    const intervalId = setInterval(() => {
+      fetchData();
+	  fetchDatas();
+	  fetchDailyAndMonthlyData();
+    }, 30000); // 30 seconds interval
+
+    return () => {
+      clearInterval(intervalId); // Clear interval on component unmount
+    };
   }, []);
 
   return (
@@ -388,7 +388,7 @@ setTimeout(() => {
               count={phase1current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase1power} unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase1power} unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -425,7 +425,7 @@ setTimeout(() => {
               count={phase2current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase2power}unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase2power}unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -461,7 +461,7 @@ setTimeout(() => {
               count={phase3current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="power" count={phase3power}unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase3power}unit="W" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -488,7 +488,7 @@ setTimeout(() => {
             <div className="bg-white h-32 rounded grid grid-cols-1 gap-2 mb-1">
               <ReactApexChart
                 options={options}
-                series={[phase1voltage]}
+                series={[threephasevoltage]}
                 type="radialBar"
               />
             </div>
@@ -500,7 +500,7 @@ setTimeout(() => {
             />
             <AddCards
 			 icon={<SiPowerbi />}
-			  title="Active-power" 
+			  title="Active-Power" 
 			   count={phase1power}
 			    unit="W" />
           
@@ -577,7 +577,7 @@ setTimeout(() => {
           </div>
         </div>
         <div
-          className="p-2 bg-white border-none rounded-md w-full  "
+          className="p-2  bg-white border-none rounded-md w-full  "
         >
           <ReactApexChart
             options={chartData.options}
