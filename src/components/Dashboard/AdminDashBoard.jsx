@@ -39,11 +39,11 @@ const AdminDashBoard = () => {
 
   const [powerfactor,setPowerfactor]=useState([])
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
-  const todayDate = `${currentDate.getFullYear()}-${
-	currentDate.getMonth() + 1
-  }-${currentDate.getDate()}`;
-
+const currentMonth = currentDate.getMonth() + 1;
+const year = currentDate.getFullYear(); // Ensure this is not declared elsewhere
+const month = String(currentMonth).padStart(2, "0");
+const day = String(currentDate.getDate()).padStart(2, "0");
+const todayDate = `${year}-${month}-${day}`;
   const fetchData = async () => {
     try {
       const response = await axios.get(
@@ -58,10 +58,11 @@ const AdminDashBoard = () => {
           const lastIndexPhase1 = latestData.phase1.length - 1;
           const phase1Data = latestData.phase1[lastIndexPhase1];
 
-          setCurrentphase1(phase1Data.current.toFixed(2));
-          setEnergyphase1(phase1Data.energy.toFixed(2));
+          setCurrentphase1(phase1Data.current.toFixed(3));
+          setEnergyphase1(phase1Data.energy.toFixed(3));
           setFrequencyphase1(phase1Data.frequency.toFixed(2));
-          setPowerphase1(phase1Data.power.toFixed(2));
+		  setPowerphase1((phase1Data.power / 1000).toFixed(3));
+
           setPower_factorphase1(phase1Data.power_factor.toFixed(2));
           setVoltagephase1(phase1Data.voltage.toFixed(2));
         } else {
@@ -72,10 +73,10 @@ const AdminDashBoard = () => {
           const lastIndexPhase2 = latestData.phase2.length - 1;
           const phase2Data = latestData.phase2[lastIndexPhase2];
 
-          setCurrentphase2(phase2Data.current.toFixed(2));
-          setEnergyphase2(phase2Data.energy.toFixed(2));
+          setCurrentphase2(phase2Data.current.toFixed(3));
+          setEnergyphase2(phase2Data.energy.toFixed(3));
           setFrequencyphase2(phase2Data.frequency.toFixed(2));
-          setPowerphase2(phase2Data.power.toFixed(2));
+          setPowerphase2((phase2Data.power/1000).toFixed(3));
           setPower_factorphase2(phase2Data.power_factor.toFixed(2));
           setVoltagephase2(phase2Data.voltage.toFixed(2));
         }
@@ -84,10 +85,10 @@ const AdminDashBoard = () => {
           const lastIndexPhase3 = latestData.phase3.length - 1;
           const phase3Data = latestData.phase3[lastIndexPhase3];
 
-          setCurrentphase3(phase3Data.current.toFixed(2));
-          setEnergyphase3(phase3Data.energy.toFixed(2));
+          setCurrentphase3(phase3Data.current.toFixed(3));
+          setEnergyphase3(phase3Data.energy.toFixed(3));
           setFrequencyphase3(phase3Data.frequency.toFixed(2));
-          setPowerphase3(phase3Data.power.toFixed(2));
+          setPowerphase3((phase3Data.power/1000).toFixed(3));
           setPower_factorphase3(phase3Data.power_factor.toFixed(2));
           setVoltagephase3(phase3Data.voltage.toFixed(2));
 		
@@ -96,8 +97,8 @@ const AdminDashBoard = () => {
 		if (latestData.three_phase && latestData.three_phase.length > 0) {
 			const latestThreePhaseData = latestData.three_phase[latestData.three_phase.length - 1]; 
 		
-			setApparent(latestThreePhaseData.apparent_power.toFixed(2));
-			setReactive(latestThreePhaseData.reactive_power.toFixed(2));
+			setApparent(latestThreePhaseData.apparent_power.toFixed(3));
+			setReactive(latestThreePhaseData.reactive_power.toFixed(3));
       setThreephasevoltage(latestThreePhaseData.voltage.toFixed(2))
 			setFrequency(latestThreePhaseData.frequency.toFixed(2));
 			setPowerfactor(latestThreePhaseData.power_factor.toFixed(2));
@@ -115,64 +116,77 @@ const AdminDashBoard = () => {
   };
 
   const options = {
-    chart: {
-      type: "radialBar",
-      offsetY: -20,
-      width: "100%",
-      sparkline: {
-        enabled: true,
-      },
-    },
-    plotOptions: {
-      radialBar: {
-        startAngle: -90,
-        endAngle: 90,
-        track: {
-          background: "#e7e7e7",
-          strokeWidth: "97%",
-          margin: 5,
-          dropShadow: {
-            enabled: true,
-            top: 2,
-            left: 0,
-            color: "#999",
-            opacity: 1,
-            blur: 2,
-          },
-        },
-        dataLabels: {
-          name: {
-            show: false,
-          },
-          value: {
-            offsetY: -2,
-            fontSize: "22px",
-            formatter: function (val) {
-              return val + "V";
-            },
-          },
-        },
-      },
-    },
-    grid: {
-      padding: {
-        top: -10,
-      },
-    },
-    fill: {
-      type: "gradient",
-      gradient: {
-        shade: "blue",
-        shadeIntensity: 0.4,
-        inverseColors: false,
-        opacityFrom: 1,
-        opacityTo: 1,
-        stops: [0, 50, 53, 91],
-      },
-    },
+	chart: {
+	  type: 'radialBar',
+	  offsetY: -20,
+	  width: '100%',
+	  sparkline: {
+		enabled: true,
+	  },
+	},
+	plotOptions: {
+	  radialBar: {
+		startAngle: -90,
+		endAngle: 90,
+		track: {
+		  background: '#e7e7e7',
+		  strokeWidth: '97%',
+		  margin: 5,
+		  dropShadow: {
+			enabled: true,
+			top: 2,
+			left: 0,
+			color: '#999',
+			opacity: 1,
+			blur: 2,
+		  },
+		},
+		dataLabels: {
+		  name: {
+			show: false,
+		  },
+		  value: {
+			offsetY: -2,
+			fontSize: '22px',
+			formatter: function (val) {
+			  // Check if the screen width is smaller than 640px
+			  if (window.innerWidth <= 640) {
+				// If smaller, add margin top to the value
+				return `${val}V`;
+			  } else {
+				// Otherwise, display the value without margin top
+				return `${val}V`;
+			  }
+			},
+		  },
+		},
+	  },
+	},
+	grid: {
+	  padding: {
+		top: -10,
+	  },
+	},
+	fill: {
+	  type: 'gradient',
+	  gradient: {
+		shade: 'blue',
+		shadeIntensity: 0.4,
+		inverseColors: false,
+		opacityFrom: 1,
+		opacityTo: 1,
+		stops: [0, 50, 53, 91],
+	  },
+	},
 	colors: ['#00008B'],
-    labels: ["Average Results"],
+	labels: ['Average Results'],
   };
+  
+  // Add this media query for small screens
+  if (window.innerWidth <= 640) { // Adjust the breakpoint as needed
+	options.plotOptions.radialBar.track.marginTop = 20; // Override margin top for small screens
+  }
+  
 
   const [chartData, setChartData] = useState({
     series: [
@@ -371,24 +385,22 @@ const AdminDashBoard = () => {
 
   return (
     <>
-      <div className="space-y-2 w-full overflow-scroll">
+      <div className="w-full h-full p-4 flex flex-col gap-4 overflow-scroll">
         <div className="space-y-1 w-full">
-          <div className=" py-1 px-2 flex space-x-2">
-            <AddCards icon={<PiWaveSineFill />} title="Phase 1" />
-            <div className="bg-white h-32 rounded grid grid-cols-1 gap-2 mb-1">
-              <ReactApexChart
-                options={options}
-                series={[phase1voltage]}
-                type="radialBar"
-              />
-            </div>
+          <div className=" flex flex-col gap-4 md:flex-row">
+		  <AddCards icon={<PiWaveSineFill />} title="Phase 1" bgColor="#62b2cd" />
+
+
+            <div className="bg-white xl:h-32 h-20 md:w-[300px]  sm:w-auto rounded grid grid-cols-1 gap-2 mb-1">
+      <ReactApexChart options={options} series={[phase1voltage]} type="radialBar" />
+    </div>
             <AddCards
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase1current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="Power" count={phase1power} unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase1power} unit="KW" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -409,9 +421,9 @@ const AdminDashBoard = () => {
 			  unit="Pf"
             />
           </div>
-          <div className=" py-1 px-2 flex space-x-2 ">
-            <AddCards icon={<PiWaveSineFill />} title="Phase 2" />
-            <div className="bg-white h-32 rounded grid grid-cols-1 gap-2 mb-1">
+          <div className=" flex flex-col gap-4 md:flex-row ">
+            <AddCards icon={<PiWaveSineFill />} title="Phase 2" bgColor="#62b2cd" />
+            <div className="bg-white xl:h-32 h-20 md:w-[300px] sm:w-auto rounded grid grid-cols-1 gap-2 mb-1">
               <ReactApexChart
                 options={options}
                 series={[phase2voltage]}
@@ -425,7 +437,7 @@ const AdminDashBoard = () => {
               count={phase2current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="Power" count={phase2power}unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase2power}unit="KW" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -446,9 +458,9 @@ const AdminDashBoard = () => {
 			  unit="Pf"
             />
           </div>
-          <div className=" py-1 px-2 flex space-x-2">
-            <AddCards icon={<PiWaveSineFill />} title="Phase 3" />
-            <div className="bg-white h-32 rounded grid grid-cols-1 gap-2 mb-1">
+          <div className=" flex flex-col gap-4 md:flex-row">
+            <AddCards icon={<PiWaveSineFill />} title="Phase 3" bgColor="#62b2cd" />
+            <div className="bg-white xl:h-32 h-20 xl:w-[300px] md:w-auto rounded grid grid-cols-1 gap-2 mb-1">
               <ReactApexChart
                 options={options}
                 series={[phase3voltage]}
@@ -461,7 +473,7 @@ const AdminDashBoard = () => {
               count={phase3current}
 			  unit="A"
             />
-            <AddCards icon={<SiPowerbi />} title="Power" count={phase3power}unit="W" />
+            <AddCards icon={<SiPowerbi />} title="Power" count={phase3power}unit="KW" />
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
@@ -483,9 +495,9 @@ const AdminDashBoard = () => {
 
             />
           </div>
-		  <div className=" py-1 px-1 flex space-x-2">
-            <AddCards icon={<PiWaveSineFill />} title="Three-Phase" />
-            <div className="bg-white h-32 rounded grid grid-cols-1 gap-2 mb-1">
+		  <div className="flex flex-col gap-4  md:flex-row">
+            <AddCards icon={<PiWaveSineFill />}  title="three Phase"bgColor="#62b2cd"  />
+            <div className="bg-white xl:h-32 h-20  md:w-[300px] sm:w-auto rounded grid grid-cols-1  mb-1">
               <ReactApexChart
                 options={options}
                 series={[threephasevoltage]}
@@ -502,43 +514,46 @@ const AdminDashBoard = () => {
 			 icon={<SiPowerbi />}
 			  title="Active-Power" 
 			   count={phase1power}
-			    unit="W" />
+			    unit="KW" />
           
 			 {/* <div className="flex space-x-4"> */}
-            <div className="card-container">
-                <SplitCards
-                    icon={<BsLightningCharge />}
-                    title="Apparent-Power"
-                    count={apparent}
-                    unit="VA"
-                />
-				<SplitCards
-                    icon={<BsLightningCharge />}
-                    title="Reactive-Power"
-                    count={reactive}
-                    unit="VAR"
-                />
-            </div>
-			<AddCards
-              icon={<BsLightningCharge />}
-              title="Energy"
-              count={phase1energy}
-			  unit="kw/h"
-            />
-            <div className="card-container">
-                <SplitCards
-                    icon={<BsLightningCharge />}
-                    title="Frequency"
-                    count={frequency}
-                    unit="Hz"
-                />
-				<SplitCards
-                    icon={<BsLightningCharge />}
-                    title="Power-Factor"
-                    count={powerfactor}
-                    unit="pf"
-                />
-            </div>
+			 <div className="grid gap-4 lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1">
+    <div className="flex flex-col gap-3">
+        <SplitCards
+            icon={<BsLightningCharge />}
+            title="Apparent-Power"
+            count={apparent}
+            unit="KVA"
+        />
+        <SplitCards
+            icon={<BsLightningCharge />}
+            title="Reactive-Power"
+            count={reactive}
+            unit="KVAR"
+        />
+    </div>
+    <div className="flex flex-col gap-3">
+        <SplitCards
+            icon={<BsLightningCharge />}
+            title="Frequency"
+            count={frequency}
+            unit="Hz"
+        />
+        <SplitCards
+            icon={<BsLightningCharge />}
+            title="Power-Factor"
+            count={powerfactor}
+            unit="pf"
+        />
+    </div>
+</div>
+
+<AddCards
+        icon={<BsLightningCharge />}
+        title="Energy"
+        count={phase1energy}
+        unit="kw/h"
+    />
         {/* </div> */}
 		
             {/* <AddCards
@@ -557,35 +572,36 @@ const AdminDashBoard = () => {
           </div>
         </div>
 		
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-full gap-4 pl-2 pr-2 flex justify-between">
-            <div className="flex w-full flex-col items-center bg-white p-3 rounded-md shadow-md">
-              <FaCalendarDay className="text-2xl mb-2 text-blue-500" />
-              <h3 className="text-xl font-semibold">Today’s Usage</h3>
-              <p className="text-lg">{todayUsage} kWh</p>
-            </div>
-            <div className="flex w-full flex-col items-center bg-white p-3 rounded-md shadow-md">
-              <FaCalendarAlt className="text-2xl mb-2 text-green-500" />
-              <h3 className="text-xl font-semibold">This Month’s Usage</h3>
-              <p className="text-lg">{monthlyUsage} kWh</p>
-            </div>
-            <div className="flex w-full flex-col items-center bg-white p-3 rounded-md shadow-md">
-              <BsLightningCharge className="text-2xl mb-2 text-red-500" />
-              <h3 className="text-xl font-semibold">Generator Usage</h3>
-              <p className="text-lg">Usage: 123.45 kWh</p> {/* Dummy data */}
-            </div>
-          </div>
-        </div>
-        <div
-          className="p-2  bg-white border-none rounded-md w-full  "
-        >
-          <ReactApexChart
-            options={chartData.options}
-            series={chartData.series}
-            type="bar"
-            height={400} // Increase the height for a larger chart view
-          />
-        </div>
+		<div className="flex flex-col items-center justify-center">
+  <div className="w-full flex flex-col lg:flex-row gap-4 pl-2 pr-2">
+    <div className="flex flex-col items-center bg-white p-3 rounded-md shadow-md  md:w-full sm:w-auto">
+      <FaCalendarDay className="text-2xl mb-2 text-blue-500" />
+      <h3 className="text-xl font-semibold">Today’s Usage</h3>
+      <p className="text-lg">{todayUsage} kWh</p>
+    </div>
+    <div className="flex flex-col items-center bg-white p-3 rounded-md shadow-md md:w-full sm:w-auto">
+      <FaCalendarAlt className="text-2xl mb-2 text-green-500" />
+      <h3 className="text-xl font-semibold">This Month’s Usage</h3>
+      <p className="text-lg">{monthlyUsage} kWh</p>
+    </div>
+    <div className="flex flex-col items-center bg-white p-3 rounded-md shadow-md  md:w-full sm:w-auto">
+      <BsLightningCharge className="text-2xl mb-2 text-red-500" />
+      <h3 className="text-xl font-semibold">Generator Usage</h3>
+      <p className="text-lg">Usage: 123.45 kWh</p> {/* Dummy data */}
+    </div>
+  </div>
+</div>
+
+
+<div className="w-full">
+  <ReactApexChart
+    options={chartData.options}
+    series={chartData.series}
+    type="bar"
+    height={400} // Increase the height for a larger chart view
+  />
+</div>
+
         <div id="html-dist"></div>
       </div>
     </>

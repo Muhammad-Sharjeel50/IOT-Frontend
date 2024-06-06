@@ -898,3 +898,9 @@ button.btn.btn-danger.dropdown-toggle {
     gap: 10px; /* Adjust the value as needed */
 	width: 195px;
 }
+@media (max-width: 408px) {
+	.w-full {
+	  width: 100%;
+	}
+  }
+  
