@@ -8,7 +8,8 @@ import { SiPowerbi } from "react-icons/si";
 import { TbGeometry } from "react-icons/tb";
 import { PiWaveSineFill } from "react-icons/pi";
 import { BsLightningCharge } from "react-icons/bs";
-import SplitCards from "./SplitCards";
+import SplitCards from "./SplitCards"
+import { API_URL } from "../../Apiurl";
 const AdminDashBoard = () => {
   const endPoint = process.env.REACT_APP_BASE_URL;
   const [phase1current, setCurrentphase1] = useState([]);
@@ -38,15 +39,15 @@ const AdminDashBoard = () => {
 
   const [powerfactor, setPowerfactor] = useState([]);
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear(); // Ensure this is not declared elsewhere
-  const month = String(currentMonth).padStart(2, "0");
-  const day = String(currentDate.getDate()).padStart(2, "0");
-  const todayDate = `${year}-${month}-${day}`;
+const currentMonth = currentDate.getMonth() + 1;
+const year = currentDate.getFullYear(); // Ensure this is not declared elsewhere
+const month = String(currentMonth).padStart(2, "0");
+const day = String(currentDate.getDate()).padStart(2, "0");
+const todayDate = `${year}-${month}-${day}`;
+const device_id = localStorage.getItem("device_id");
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        "http://34.224.21.199:5000/api/sensors/data/08:F9:E0:5F:AC:66"
+      const response = await axios.get(`${API_URL}/api/sensors/data/${device_id}`
       );
       const data = response.data;
       if (data.length > 0) {
@@ -245,7 +246,7 @@ const AdminDashBoard = () => {
   const fetchDatas = async () => {
     try {
       const response = await axios.get(
-        "http://34.224.21.199:5000/api/sensors/data/08:F9:E0:5F:AC:66"
+                          `${API_URL}/api/sensors/data/${device_id}`
       );
       const data = response.data;
 
@@ -291,7 +292,7 @@ const AdminDashBoard = () => {
   const fetchDailyAndMonthlyData = async () => {
     try {
       const response = await axios.get(
-        "http://34.224.21.199:5000/api/sensors/data/08:F9:E0:5F:AC:66"
+                          `${API_URL}/api/sensors/data/${device_id}`
       );
       const data = response.data;
       let totalMonthlyUsage = 0;

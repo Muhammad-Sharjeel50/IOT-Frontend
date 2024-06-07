@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import '../App.css'
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../Apiurl'
 function Login() {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -14,12 +15,7 @@ function Login() {
 	const handleRememberMeChange = () => {
 		setRememberMe(!rememberMe)
 	}
-	
 
-	const handleSignUp = () => {
-	  navigate('/user');
-	};
-	useEffect(() => {
 		const userToken = localStorage.getItem('user-token')
 		if (userToken) {
 			window.location.href = '/Dashboard'
@@ -32,7 +28,7 @@ function Login() {
 			setPassword(rememberedPassword)
 			setRememberMe(true)
 		}
-	}, [])
+
 
 	const handleLogin = async () => {
 		if (!email || !password) {
@@ -46,20 +42,22 @@ function Login() {
 		}
 
 		try {
-			const response = await axios.post(`http://${endPoint}:8000/core/login/`, {
-				email,
+			const response = await axios.post(`${API_URL}/api/users/login`, {
+				email,	
 				password,
 			})
 
 			if (response.status === 200) {
-				const user = JSON.stringify(response.data.user_data)
-				localStorage.setItem('user-token', response.data.token)
-				localStorage.setItem('is_admin', response.data.user_data.is_admin)
-				localStorage.setItem('User Role', response.data.user_data.role)
-				localStorage.setItem('user', user)
+				console.log("tojennn",response)
+					// const user = JSON.stringify(response.data.user_data)
+					localStorage.setItem('user-token', response.data.token)
+					// localStorage.setItem('is_admin', response.data.user_data.is_admin)
+					// localStorage.setItem('User Role', response.data.user_data.role)
+					// localStorage.setItem('user', user)
+				localStorage.setItem('rememberedEmail', email);
 				Swal.fire({
 					icon: 'success',
-					title: `Welcome ${response.data.user_data.name}`,
+					// title: `Welcome ${response.data.user_data.name}`,
 					text: 'You have successfully logged in',
 					showCloseButton: true,
 				})
@@ -70,7 +68,7 @@ function Login() {
 				}
 
 				setTimeout(() => {
-					window.location.href = '/Dashboard'
+					window.location.href = '/device'
 				}, 500)
 			}
 		} catch (error) {
@@ -79,21 +77,21 @@ function Login() {
 				Swal.fire({
 					icon: 'error',
 					title: 'You are not authorized',
-					text: error?.response?.data?.detail,
+					// text: error?.response?.data?.detail,
 					showCloseButton: true,
 				})
 			} else if (error.response && error.response.status === 403) {
 				Swal.fire({
 					icon: 'error',
 					title: 'Access DeniedForbidden',
-					text: ` ${error?.response?.data?.detail}`,
+					// text: ` ${error?.response?.data?.detail}`,
 					showCloseButton: true,
 				})
 			} else {
 				Swal.fire({
 					icon: 'error',
 					title: 'An error occurred',
-					text: error.response.data.detail,
+					// text: error.response.data.detail,
 					showCloseButton: true,
 				})
 			}

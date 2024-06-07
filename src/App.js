@@ -25,6 +25,7 @@ import UpdatePage from './pages/User/UpdatePage';
 import Permitrole from './pages/rolespermissions/Permitrole';
 import RolesPermissions from './pages/rolespermissions/RolesPermissions';
 import AdminDashBoard from './components/Dashboard/AdminDashBoard';
+import DeviceComponent from './components/DeviceComponent';
 
 export default function App() {
 
@@ -62,7 +63,11 @@ export default function App() {
             <Dashboard />
           // </ProtectedRoute>
         } />
-
+ <Route path='/device' element={
+          // <ProtectedRoute>
+            <DeviceComponent   />
+          // </ProtectedRoute>
+        } />
         <Route path="/password-reset-request" element={
           <Passwordresetrequest />
         } />

@@ -3,28 +3,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "./PasswordReset/reg.css";
+import { API_URL } from "../Apiurl";
 
 function AddUsers() {
-
   const endPoint = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem('user-token')
-  const[deviceid,setDeviceid]=useState(null)
-  const [name, setname] = useState("");
+
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [phone_number, setPhone_number] = useState("");
-  const isActive = true;
-  const picture = null
-  const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("")
-  const [roles, setRoles] = useState([])
-  const departments = ["Sales", "Technical", "Marketing", "Finance"];
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const navigate = useNavigate();
 
-
   const handleRegistration = async () => {
-
-    if (!deviceid ||!name ||!email ||  !password ) {
+    if (!username || !email || !password || !confirmPassword) {
       Swal.fire({
         icon: 'error',
         title: 'Fields Required',
@@ -32,14 +25,13 @@ function AddUsers() {
         showCloseButton: true,
       });
       return;
-    } else if (!name.match(/^[a-zA-Z\s]+$/)) {
+    } else if (!username.match(/^[a-zA-Z\s]+$/)) {
       Swal.fire({
         icon: 'error',
         title: 'Username is not valid',
         text: 'Username must be an Alphabet',
         showCloseButton: true,
       });
-
       return;
     } else if (
       !email.match(
@@ -52,111 +44,66 @@ function AddUsers() {
         text: 'Email must include @ and domain name',
         showCloseButton: true,
       });
-
       return;
-    } else if (
-      !phone_number.match(
-        /^((\+92)|(0092))-{0,1}\d{3}-{0,1}\d{7}$|^\d{11}$|^\d{4}-\d{7}$/
-      )
-    ) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Phonenumber is not valid',
-        text: 'Phone Number must be 11 digits long (03451234567 )',
-        showCloseButton: true,
-      });
-
-      return;
-    } else if (password.length < 8 && !password.match(/[!@#%^&*]/)) {
+    } else if (password.length < 8 || !password.match(/[!@#%^&*]/)) {
       Swal.fire({
         icon: 'error',
         title: 'Password is not valid',
-        text: 'Password must be at least 8 characters long. Must contains 1 Capital Albhabet and 1 Special Chracter!',
+        text: 'Password must be at least 8 characters long. Must contain 1 capital letter and 1 special character!',
         showCloseButton: true,
       });
-
+      return;
+    } else if (password !== confirmPassword) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Passwords do not match',
+        text: 'Please ensure that password and confirm password match.',
+        showCloseButton: true,
+      });
       return;
     }
 
     try {
       const response = await axios.post(
-        `http://${endPoint}:8000/core/register/`,
+        `${API_URL}/api/users/register`,
         {
-          deviceid,
-          name,
+          username,
           email,
           password,
         }
       );
 
-      if (response.status === 200) {
-
-
+      if (response.status === 201) {
         Swal.fire({
-
           icon: 'success',
           title: 'Registration Successful',
           text: 'User Added Successfully!',
           showConfirmButton: false,
           timer: 2000
         }).then(() => {
-          navigate("/home");
-        })
-        setname("");
+          navigate("/login");
+        });
+        setUsername("");
         setEmail("");
-        setPhone_number("");
-        setDepartment("");
         setPassword("");
-        setRole("")
+        setConfirmPassword("");
       } else {
         Swal.fire({
-
           icon: 'error',
           title: 'Registration Failed',
           text: response.error,
           showCloseButton: true,
-
-        })
-
+        });
       }
     } catch (error) {
       Swal.fire({
-
         icon: 'error',
         title: 'An error occurred during registration',
-        text: error,
+        text: error.message,
         showCloseButton: true,
-      })
+      });
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/core/roles', {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (response.status === 200) {
-          setRoles(response.data)
-        }
-      } catch (error) {
-        Swal.fire({
-
-          icon: 'error',
-          title: 'Error fetching user',
-          text: error,
-          showCloseButton: true,
-        })
-
-      }
-    }
-
-    fetchData()
-  }, [token])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -165,77 +112,72 @@ function AddUsers() {
     }
   };
 
-  const handleBack = ()=>{
-   navigate('/home')
+  const handleBack = () => {
+    navigate('/login');
+  };
 
-  }
   return (
-    <div className="borderapp">
-      <div className="flex w-full bg-gray-100 h-full rounded-lg items-center py-2">
-        <div className="w-1/3 mx-auto bg-white flex-col py-4 px-10 min-h-full rounded-xl justify-center text-center border shadow-xl">
-          <div className="py-2">
-            <h1 className=" text-gray-700 text-xl pb-6">Add New User</h1>
+    <div className="device-component">
+      <div className="flex items-center justify-center min-h-full bg-gray-100">
+        <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg" style={{ minHeight: '650px' }}>
+          <h1 className="text-2xl font-semibold text-center text-gray-700 mb-4">Registration</h1>
+          <div className="space-y-4 pt-8">
+            <div>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Name*"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
+            <div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Email*"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Password*"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Confirm Password*"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <button
+                className="w-full px-4 py-2 text-xl text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:outline-none focus:ring focus:ring-sky-500"
+                onKeyDown={handleKeyDown}
+                onClick={handleRegistration}
+              >
+                Register
+              </button>
+              <button
+                className="w-full px-4 py-2 text-xl text-black bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring"
+                onClick={handleBack}
+              >
+                Back To Login
+              </button>
+            </div>
           </div>
-          <div className="input-container py-1">
-            <input
-              type="text"
-              value={deviceid}
-              onChange={(e) => setDeviceid(e.target.value)}
-              onKeyDown={handleKeyDown}
-
-              placeholder="DeviceId*"
-              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-            />
-          </div>
-          <div className="input-container py-1">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setname(e.target.value)}
-              onKeyDown={handleKeyDown}
-
-              placeholder="Name*"
-              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="input-container py-1">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={handleKeyDown}
-
-              placeholder="Email* "
-              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-            />
-          </div>
-          <div className="input-container pt-2">
-            <input
-              type="text"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Password*"
-              className="w-full mx-auto px-4 border-1 border-gray-400 text-gray-900 bg-gray-100 placeholder:text-slate-400"
-            />
-          </div>
-         
-          <div className="grid gap-2 ">
-            <button
-            className="bg-sky-600 mx-auto mt-4 rounded-xl scale-100 active:scale-90 cursor-pointer px-8 py-2 active:bg-blue-500 focus:bg-blue-700 focus:ring text-white text-xl font-medium"
-            onKeyDown={handleKeyDown}
-            onClick={handleRegistration}
-
-          >
-            Add User
-          </button>
-          <button className="bg-white-600 shadow-lg border flex-shrink  mx-auto mt-4 rounded-xl scale-100 active:scale-90 cursor-pointer px-4 py-2 active:bg-sky-500 focus:bg-blue-700 focus:ring text-black text-xl font-medium" onClick={handleBack}>
-            Back To Home
-          </button>
-          </div>
-          
-
         </div>
       </div>
     </div>

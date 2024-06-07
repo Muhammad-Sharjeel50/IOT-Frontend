@@ -1,9 +1,10 @@
-import axios from "axios";
-import React, { useState, useEffect } from "react";
-import ReactPaginate from "react-paginate";
-import { useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween";
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import ReactPaginate from 'react-paginate';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+import { API_URL } from '../../Apiurl';
 
 dayjs.extend(isBetween);
 
@@ -16,12 +17,12 @@ export default function AllUser({ isAdmin, setUsers }) {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [timeRange, setTimeRange] = useState(0);
-
+  const device_id = localStorage.getItem("device_id");
   const fetchDatas = async () => {
     try {
-      const response = await axios.get(
-        "http://192.168.137.105:5000/api/sensors/data/08:F9:E0:5F:AC:66"
-      );
+        const response = await axios.get(
+            `${API_URL}/api/sensors/data/${device_id}`
+    );
       const data = response.data;
       console.log("Fetched Data:", data[0].three_phase);
 

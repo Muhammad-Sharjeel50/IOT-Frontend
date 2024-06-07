@@ -1,13 +1,14 @@
-import { faHome, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faBars, faTimes, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 import { MdSupervisorAccount, MdUpdate } from 'react-icons/md';
 import { FaChessQueen } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './sidbar.css';
 
 export default function Sidebar(props) {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const sidebarItems = [
         {
@@ -16,7 +17,6 @@ export default function Sidebar(props) {
             icon: <MdSupervisorAccount className="text-2xl text-black" />,
             link: '/home',
         },
-
         {
             title: 'Configure Bot',
             key: 'Configure_Bot',
@@ -41,22 +41,21 @@ export default function Sidebar(props) {
             icon: <FaChessQueen className="text-2xl text-black" />,
             link: '/connecttodevice',
         },
-        // {
-        //     title: 'Profile Update',
-        //     key: 'Profile_Update',
-        //     icon: <MdUpdate className="text-2xl text-black mt-2" />,
-        //     link: '/profile/update', // Adjust this link as needed
-        // },
         {
             title: 'Graphs',
             key: 'activeagent',
             icon: <MdUpdate className="text-2xl text-black mt-2" />,
-            link: '/activeagent', // Adjust this link as needed
+            link: '/activeagent',
         },
     ];
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
+    };
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/');
     };
 
     return (
@@ -89,6 +88,13 @@ export default function Sidebar(props) {
                             </Link>
                         </div>
                     ))}
+                    {/* Logout Button */}
+                    <div className="my-6 w-full flex items-start">
+                        <button className="flex items-center" onClick={handleLogout}>
+                            <FontAwesomeIcon icon={faSignOutAlt} className="text-xl text-black" />
+                            <p className="text-lg text-black px-2 pt-1 hidden lg:block">Logout</p>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
