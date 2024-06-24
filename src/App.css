@@ -914,3 +914,54 @@ button.btn.btn-danger.dropdown-toggle {
     /* overflow: hidden; */
   
  }
+/* Table container should be scrollable */
+.max-w-full {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-container {
+  overflow-y: auto;
+  max-height: 42rem;
+}
+
+/* Table styles */
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th, .table-container td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflowing content */
+  text-overflow: ellipsis; /* Show ellipsis for overflow */
+}
+
+/* Hide columns on small screens */
+@media (max-width: 740px) {
+  .hidden-sm {
+    display: none;
+  }
+}
+
+/* Zebra striping for rows */
+.table-container tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table-container tr:hover {
+  background-color: #ddd;
+}
+@media (max-width: 640px) {
+  .p-2 {
+    width: 100%;
+  }
+}
+@media (min-width: 768px) {
+  .flex-col.md\:flex-row {
+    flex-direction: row;
+  }
+}

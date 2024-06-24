@@ -10,6 +10,9 @@ import { PiWaveSineFill } from "react-icons/pi";
 import { BsLightningCharge } from "react-icons/bs";
 import SplitCards from "./SplitCards"
 import { API_URL } from "../../Apiurl";
+import Swal from 'sweetalert2'
+import { useMediaQuery } from 'react-responsive';
+
 const AdminDashBoard = () => {
   const endPoint = process.env.REACT_APP_BASE_URL;
   const [phase1current, setCurrentphase1] = useState([]);
@@ -36,15 +39,16 @@ const AdminDashBoard = () => {
   const [reactive, setReactive] = useState([]);
   const [threephasevoltage, setThreephasevoltage] = useState([]);
   const [frequency, setFrequency] = useState([]);
-
+   const[ThreephasePower, setThreephasepower] = useState([]);
+   const [threephaseenergy, setThreePhaseenergy ]= useState([]);
   const [powerfactor, setPowerfactor] = useState([]);
   const currentDate = new Date();
-const currentMonth = currentDate.getMonth() + 1;
-const year = currentDate.getFullYear(); // Ensure this is not declared elsewhere
-const month = String(currentMonth).padStart(2, "0");
-const day = String(currentDate.getDate()).padStart(2, "0");
-const todayDate = `${year}-${month}-${day}`;
-const device_id = localStorage.getItem("device_id");
+  const currentMonth = currentDate.getMonth() + 1;
+  const year = currentDate.getFullYear(); // Ensure this is not declared elsewhere
+  const month = String(currentMonth).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+  const todayDate = `${year}-${month}-${day}`;
+  const device_id = localStorage.getItem("device_id");
   const fetchData = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/sensors/data/${device_id}`
@@ -53,7 +57,8 @@ const device_id = localStorage.getItem("device_id");
       if (data.length > 0) {
         const lastIndex = data.length - 1;
         const latestData = data[lastIndex];
-
+        let showAlert = false;
+        
         if (latestData.phase1 && latestData.phase1.length > 0) {
           const lastIndexPhase1 = latestData.phase1.length - 1;
           const phase1Data = latestData.phase1[lastIndexPhase1];
@@ -64,10 +69,20 @@ const device_id = localStorage.getItem("device_id");
           setPowerphase1((phase1Data.power / 1000).toFixed(3));
 
           setPower_factorphase1(phase1Data.power_factor.toFixed(2));
-          setVoltagephase1(phase1Data.voltage.toFixed(2));
-        } else {
-          console.warn("No phase1 data available");
+         const  phase1voltage = parseFloat(phase1Data.voltage.toFixed(2));
+         setVoltagephase1(phase1Data.voltage.toFixed(2))
+         console.log("Phase 1 Voltage:", phase1voltage);
+         if (phase1voltage < 50) {
+          showAlert = true; 
         }
+        else if(phase1voltage <150){
+          showAlert = true; 
+          
+        }
+      } else {
+        console.warn("No phase1 data available");
+      
+        } 
 
         if (latestData.phase2 && latestData.phase2.length > 0) {
           const lastIndexPhase2 = latestData.phase2.length - 1;
@@ -78,7 +93,17 @@ const device_id = localStorage.getItem("device_id");
           setFrequencyphase2(phase2Data.frequency.toFixed(2));
           setPowerphase2((phase2Data.power / 1000).toFixed(3));
           setPower_factorphase2(phase2Data.power_factor.toFixed(2));
-          setVoltagephase2(phase2Data.voltage.toFixed(2));
+          const phase2voltage = parseFloat(phase2Data.voltage.toFixed(2));
+          setVoltagephase2(phase2Data.voltage.toFixed(2))
+         console.log("Phase 2 Voltage:", phase2voltage);
+
+        if (phase2voltage < 50) {
+          showAlert = true;
+        }
+        else if(phase2voltage < 150){
+          showAlert = true;
+        }
+
         }
 
         if (latestData.phase3 && latestData.phase3.length > 0) {
@@ -90,7 +115,23 @@ const device_id = localStorage.getItem("device_id");
           setFrequencyphase3(phase3Data.frequency.toFixed(2));
           setPowerphase3((phase3Data.power / 1000).toFixed(3));
           setPower_factorphase3(phase3Data.power_factor.toFixed(2));
-          setVoltagephase3(phase3Data.voltage.toFixed(2));
+          const phase3voltage = parseFloat(phase3Data.voltage.toFixed(2));
+          setVoltagephase3(phase3Data.voltage.toFixed(2))
+          console.log("Phase 3 Voltage:", phase3voltage);
+          if (phase3voltage < 50) {
+            showAlert = true;
+          }
+          else if(phase3voltage < 150){
+            showAlert = true;
+          }
+          if (showAlert) {
+            Swal.fire({
+              icon: 'error',
+              text: 'Voltage of at least one phase is less than 150  Voltage is Dim Or Occured!',
+              showCloseButton: true,
+            });
+          }   
+
         }
 
         if (latestData.three_phase && latestData.three_phase.length > 0) {
@@ -102,9 +143,12 @@ const device_id = localStorage.getItem("device_id");
           setThreephasevoltage(latestThreePhaseData.voltage.toFixed(2));
           setFrequency(latestThreePhaseData.frequency.toFixed(2));
           setPowerfactor(latestThreePhaseData.power_factor.toFixed(2));
+           setThreephasepower(latestThreePhaseData.power.toFixed(2))
+           setThreePhaseenergy(latestThreePhaseData.energy.toFixed(2))
         } else {
           console.warn("No three_phase data available");
         }
+    
       } else {
         console.warn("No data available");
       }
@@ -188,6 +232,7 @@ const device_id = localStorage.getItem("device_id");
 
   const [chartData, setChartData] = useState({
     series: [
+      // { name: "Time", },
       { name: "Phase 1", data: Array.from({ length: 24 }, () => 0) },
       { name: "Phase 2", data: Array.from({ length: 24 }, () => 0) },
       { name: "Phase 3", data: Array.from({ length: 24 }, () => 0) },
@@ -220,9 +265,9 @@ const device_id = localStorage.getItem("device_id");
       },
       yaxis: {
         min: 0,
-        max: 100,
+        max: 10,
         title: {
-          text: "Power (kW)",
+          text: "Energy (kWh)",
         },
         labels: {
           formatter: function (val) {
@@ -236,7 +281,7 @@ const device_id = localStorage.getItem("device_id");
       tooltip: {
         y: {
           formatter: function (val) {
-            return `${Math.round(val)} kW`;
+            return `${val.toFixed(2)} kWh`;
           },
         },
       },
@@ -246,39 +291,48 @@ const device_id = localStorage.getItem("device_id");
   const fetchDatas = async () => {
     try {
       const response = await axios.get(
-                          `${API_URL}/api/sensors/data/${device_id}`
+        `${API_URL}/api/sensors/data/${device_id}`
       );
       const data = response.data;
-
+  
       const filterAndSumPower = (phaseData) => {
         const filteredData = phaseData.filter(
-          (item) => item.reading_date == todayDate
+          (item) => item.reading_date === todayDate
         );
-
         const powerData = Array(24).fill(0);
+        const zeroCountData = Array(24).fill(0);
+  
         filteredData.forEach((item) => {
           const hour = parseInt(item.reading_time.split(":")[0]);
-
-          const powerValue = Number(item.power);
-
-          powerData[hour] += powerValue.toFixed(2) / 1000;
+          const powerValue =item.power;
+          if (powerValue !== 0) {
+            powerData[hour] += powerValue;
+          } else {
+            zeroCountData[hour]++;
+          }
         });
-
-        return powerData;
+  
+        const averagePowerData = powerData.map((sum, index) => {
+          const validMinutes = 60 - zeroCountData[index];
+          console.log("validminutes::",validMinutes)
+          return validMinutes === 0 ? 0 : ((sum / validMinutes)/1000);
+        });
+        return averagePowerData;
       };
-
+  
       if (data.length > 0) {
         const powerDataPhase1 = filterAndSumPower(data[0].phase1);
         const powerDataPhase2 = filterAndSumPower(data[0].phase2);
         const powerDataPhase3 = filterAndSumPower(data[0].phase3);
         const three_phaseData = filterAndSumPower(data[0].three_phase);
+        console.log("powerDataPhase1",powerDataPhase1)
         setChartData((prevState) => ({
           ...prevState,
           series: [
             { name: "Phase 1", data: powerDataPhase1 },
             { name: "Phase 2", data: powerDataPhase2 },
             { name: "Phase 3", data: powerDataPhase3 },
-            { name: "threephase", data: three_phaseData },
+            { name: "Three Phase", data: three_phaseData },
           ],
         }));
       } else {
@@ -289,76 +343,97 @@ const device_id = localStorage.getItem("device_id");
     }
   };
 
+
   const fetchDailyAndMonthlyData = async () => {
     try {
       const response = await axios.get(
-                          `${API_URL}/api/sensors/data/${device_id}`
+        `${API_URL}/api/sensors/data/${device_id}`
       );
       const data = response.data;
-      let totalMonthlyUsage = 0;
-      let totalDailyUsage = 0;
-
-      const calculateUsage = (phaseData, filterCondition) => {
-        const filteredData = phaseData.filter(filterCondition);
-
+  
+      let averageDailyPower = 0;
+      let averageMonthlyPower = 0;
+  
+      // Function to filter and sum power for a specific condition
+      const filterAndSumPower = (phaseData, filterCondition, isMonthly) => {
+        const powerData = Array(24).fill(0);
+        const zeroCountData = Array(24).fill(0);
         let totalPower = 0;
-        filteredData.forEach((item) => {
-          totalPower += item.power;
+        let totalMinutesWithPower = 0;
+  
+        phaseData.forEach((item) => {
+          const filterDate = isMonthly ?
+            new Date(item.reading_date).getMonth() + 1 === new Date().getMonth() + 1 :
+            item.reading_date === new Date().toISOString().split('T')[0];
+  
+          if (filterCondition(item) && filterDate) {
+            const hour = parseInt(item.reading_time.split(":")[0]);
+            const powerValue = item.power;
+  
+            if (powerValue !== 0) {
+              powerData[hour] += powerValue;
+              totalPower += powerValue;
+              totalMinutesWithPower++;
+            } else {
+              zeroCountData[hour]++;
+            }
+          }
         });
-
-        return (totalPower / 1000).toFixed(2);
+  
+        // Calculate average power per hour
+        const averagePowerData = powerData.map((sum, index) => {
+          const validMinutes = 60 - zeroCountData[index];
+          return validMinutes === 0 ? 0 : (sum / validMinutes) / 1000; // Convert to kW
+        });
+  
+        // Return object with calculated values
+        return {
+          averagePowerData,
+          totalMinutesWithPower,
+        };
       };
-
+  
       if (data.length > 0) {
-        const monthlyFilterCondition = (item) =>
-          new Date(item.reading_date).getMonth() + 1 === currentMonth;
-        const dailyFilterCondition = (item) => item.reading_date == todayDate;
-
-        const phase1MonthlyUsage = calculateUsage(
-          data[0].phase1,
-          monthlyFilterCondition
-        );
-        const phase2MonthlyUsage = calculateUsage(
-          data[0].phase2,
-          monthlyFilterCondition
-        );
-        const phase3MonthlyUsage = calculateUsage(
-          data[0].phase3,
-          monthlyFilterCondition
-        );
-
-        const phase1DailyUsage = calculateUsage(
-          data[0].phase1,
-          dailyFilterCondition
-        );
-        const phase2DailyUsage = calculateUsage(
-          data[0].phase2,
-          dailyFilterCondition
-        );
-        const phase3DailyUsage = calculateUsage(
-          data[0].phase3,
-          dailyFilterCondition
-        );
-
-        totalMonthlyUsage =
-          parseFloat(phase1MonthlyUsage) +
-          parseFloat(phase2MonthlyUsage) +
-          parseFloat(phase3MonthlyUsage);
-
-        totalDailyUsage =
-          parseFloat(phase1DailyUsage) +
-          parseFloat(phase2DailyUsage) +
-          parseFloat(phase3DailyUsage);
+        const currentMonth = new Date().getMonth() + 1;
+        const todayDate = new Date().toISOString().split('T')[0];
+  
+        // Monthly filter condition (current month)
+        const monthlyFilterCondition = (item) => true; // All items for monthly sum
+        const threePhaseMonthly = filterAndSumPower(data[0].three_phase, monthlyFilterCondition, true);
+  
+        // Calculate average power for monthly usage
+        averageMonthlyPower = threePhaseMonthly.averagePowerData.reduce((acc, val) => acc + val, 0);
+  
+        // Daily filter condition (current date)
+        const dailyFilterCondition = (item) => true; // All items for daily sum
+        const threePhaseDaily = filterAndSumPower(data[0].three_phase, dailyFilterCondition, false);
+  
+        // Calculate average power for daily usage
+        averageDailyPower = threePhaseDaily.averagePowerData.reduce((acc, val) => acc + val, 0);
+  
+        // Display results or update state
+        console.log(`Average power consumed today: ${averageDailyPower.toFixed(2)} kW`);
+        console.log(`Average power consumed this month: ${averageMonthlyPower.toFixed(2)} kW`);
+  
+        // Update state with average values
+        setMonthlyUsage(averageMonthlyPower.toFixed(2));
+        setTodayUsage(averageDailyPower.toFixed(2));
       } else {
         console.warn("No data available");
       }
-
-      setMonthlyUsage(totalMonthlyUsage.toFixed(2));
-      setTodayUsage(totalDailyUsage.toFixed(2));
+  
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+  
+  
+  
+  
+  
+  
+
+
 
   useEffect(() => {
     fetchData();
@@ -374,233 +449,485 @@ const device_id = localStorage.getItem("device_id");
       clearInterval(intervalId); // Clear interval on component unmount
     };
   }, []);
+  const [selectedPhase, setSelectedPhase] = useState(null);
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  const handlePhaseClick = (phase) => {
+    setSelectedPhase(phase);
+  };
 
   return (
     <>
       <div className="w-full h-full p-4 flex flex-col gap-4 overflow-scroll">
-        <div className="space-y-1 w-full">
-          <div className=" flex flex-col gap-4 md:flex-row">
+
+
+<div className="flex-grow bg-gray-100">
+      {!isMobile ? (
+        <div className="xl:grid md:grid none w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+          <div className="space-y-4">
             <AddCards
               icon={<PiWaveSineFill />}
               title="Phase 1"
-              bgColor="#62b2cd"
+              bgColor="xl:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
+              onClick={() => handlePhaseClick("phase1")}
             />
-
-            <div className="bg-white xl:h-32 h-24 md:w-[300px]  sm:w-auto rounded grid grid-cols-1 gap-2 mb-1">
+            <AddCards
+              icon={<PiWaveSineFill />}
+              title="Phase 2"
+              bgColor="xl:bg-[#ffffff]"
+              smBgColor="bg-[#118A99]"
+              onClick={() => handlePhaseClick("phase2")}
+            />
+            <AddCards
+              icon={<PiWaveSineFill />}
+              title="Phase 3"
+              bgColor="xl:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
+              onClick={() => handlePhaseClick("phase3")}
+            />
+            <AddCards
+              icon={<PiWaveSineFill />}
+              title="Three Phase"
+              bgColor="xl:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+              onClick={() => handlePhaseClick("threephase")}
+            />
+          </div>
+          <div className="col-span-2 space-y-4">
+            <div style={{ background: '#fff', height: '132px', borderRadius: '0.5rem', overflow: 'hidden' }}>
               <ReactApexChart
                 options={options}
                 series={[phase1voltage]}
                 type="radialBar"
+                style={{ width: '100%', height: '100%' }}
               />
             </div>
+            <div style={{ background: '#fff', height: '132px', borderRadius: '0.5rem', overflow: 'hidden' }}>
+              <ReactApexChart
+                options={options}
+                series={[phase2voltage]}
+                type="radialBar"
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+            <div style={{ background: '#fff', height: '132px', borderRadius: '0.5rem', overflow: 'hidden' }}>
+              <ReactApexChart
+                options={options}
+                series={[phase3voltage]}
+                type="radialBar"
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+            <div style={{ background: '#fff', height: '132px', borderRadius: '0.5rem', overflow: 'hidden' }}>
+              <ReactApexChart
+                options={options}
+                series={[threephasevoltage]}
+                type="radialBar"
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
             <AddCards
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase1current}
               unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
             />
-            <AddCards
-              icon={<SiPowerbi />}
-              title="Power"
-              count={phase1power}
-              unit="Kw"
-            />
-            <AddCards
-              icon={<BsLightningCharge />}
-              title="Energy"
-              count={phase1energy}
-              unit="kw/h"
-            />
-            <AddCards
-              icon={<GiLightningFrequency />}
-              title="Frequency"
-              count={phase1frequency}
-              unit="Hz"
-            />
-
-            <AddCards
-              icon={<TbGeometry />}
-              title="Power_Factor	"
-              count={phase1power_factor}
-              unit="Pf"
-            />
-          </div>
-          <div className=" flex flex-col gap-4 md:flex-row ">
-            <AddCards
-              icon={<PiWaveSineFill />}
-              title="Phase 2"
-              bgColor="#62b2cd"
-            />
-            <div className="bg-white xl:h-32 h-24 md:w-[300px] sm:w-auto rounded grid grid-cols-1 gap-2 mb-1">
-              <ReactApexChart
-                options={options}
-                series={[phase2voltage]}
-                type="radialBar"
-              />
-            </div>
-
             <AddCards
               icon={<PiWaveSineFill />}
               title="Current"
               count={phase2current}
               unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#78A845]"
+            />
+            <AddCards
+              icon={<PiWaveSineFill />}
+              title="Current"
+              count={phase3current}
+              unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
+            />
+            <AddCards
+              icon={<PiWaveSineFill />}
+              title="Current"
+              count={phase1current}
+              unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
+          </div>
+          <div className="space-y-4">
+            <AddCards
+              icon={<SiPowerbi />}
+              title="Power"
+              count={phase1power}
+              unit="Kw"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
             />
             <AddCards
               icon={<SiPowerbi />}
               title="Power"
               count={phase2power}
               unit="Kw"
-            />
-            <AddCards
-              icon={<BsLightningCharge />}
-              title="Energy"
-              count={phase2energy}
-              unit="kw/h"
-            />
-            <AddCards
-              icon={<GiLightningFrequency />}
-              title="Frequency"
-              count={phase2frequency}
-              unit="Hz"
-            />
-
-            <AddCards
-              icon={<TbGeometry />}
-              title="Power_Factor"
-              count={phase2power_factor}
-              unit="Pf"
-            />
-          </div>
-          <div className=" flex flex-col gap-4 md:flex-row">
-            <AddCards
-              icon={<PiWaveSineFill />}
-              title="Phase 3"
-              bgColor="#62b2cd"
-            />
-            <div className="bg-white xl:h-32 h-24 xl:w-[300px] md:w-auto rounded grid grid-cols-1 gap-2 mb-1">
-              <ReactApexChart
-                options={options}
-                series={[phase3voltage]}
-                type="radialBar"
-              />
-            </div>
-            <AddCards
-              icon={<PiWaveSineFill />}
-              title="Current"
-              count={phase3current}
-              unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#78A845]"
             />
             <AddCards
               icon={<SiPowerbi />}
               title="Power"
               count={phase3power}
               unit="Kw"
-            />
-            <AddCards
-              icon={<BsLightningCharge />}
-              title="Energy"
-              count={phase3energy}
-              unit="kw/h"
-            />
-            <AddCards
-              icon={<GiLightningFrequency />}
-              title="Frequency"
-              count={phase3frequency}
-              unit="Hz"
-            />
-
-            <AddCards
-              icon={<TbGeometry />}
-              title="Power_Factor"
-              count={phase3power_factor}
-              unit="Pf"
-            />
-          </div>
-          <div className="flex flex-col gap-4  md:flex-row">
-            <AddCards
-              icon={<PiWaveSineFill />}
-              title="three Phase"
-              bgColor="#62b2cd"
-            />
-            <div className="bg-white xl:h-32 h-20  md:w-[300px] sm:w-auto rounded grid grid-cols-1  mb-1">
-              <ReactApexChart
-                options={options}
-                series={[threephasevoltage]}
-                type="radialBar"
-              />
-            </div>
-            <AddCards
-              icon={<PiWaveSineFill />}
-              title="Current"
-              count={phase1current}
-              unit="A"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
             />
             <AddCards
               icon={<SiPowerbi />}
               title="Active-Power"
               count={phase1power}
               unit="Kw"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
             />
-
-            {/* <div className="flex space-x-4"> */}
-            <div className="grid gap-4 lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1">
-              <div className="flex flex-col gap-3">
-                <SplitCards
-                  icon={<BsLightningCharge />}
-                  title="Apparent-Power"
-                  count={apparent}
-                  unit="KVA"
-                />
-                <SplitCards
-                  icon={<BsLightningCharge />}
-                  title="Reactive-Power"
-                  count={reactive}
-                  unit="KVAR"
-                />
-              </div>
-              <div className="flex flex-col gap-3">
-                <SplitCards
-                  icon={<BsLightningCharge />}
-                  title="Frequency"
-                  count={frequency}
-                  unit="Hz"
-                />
-                <SplitCards
-                  icon={<BsLightningCharge />}
-                  title="Power-Factor"
-                  count={powerfactor}
-                  unit="pf"
-                />
-              </div>
-            </div>
-
+          </div>
+          <div className="space-y-4">
             <AddCards
               icon={<BsLightningCharge />}
               title="Energy"
               count={phase1energy}
-              unit="kw/h"
+              unit="W/h"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
             />
-            {/* </div> */}
-
-            {/* <AddCards
+            <AddCards
+              icon={<BsLightningCharge />}
+              title="Energy"
+              count={phase2energy}
+              unit="W/h"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#78A845]"
+            />
+            <AddCards
+              icon={<BsLightningCharge />}
+              title="Energy"
+              count={phase3energy}
+              unit="W/h"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
+            />
+            <AddCards
+              icon={<BsLightningCharge />}
+              title="Energy"
+              count={phase1energy}
+              unit="W/h"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
+          </div>
+          <div className="space-y-4">
+            <AddCards
               icon={<GiLightningFrequency />}
-              title="frequency"
+              title="Frequency"
               count={phase1frequency}
-			  unit="Hz"
-            /> */}
-            {/* 
+              unit="Hz"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
+            />
+            <AddCards
+              icon={<GiLightningFrequency />}
+              title="Frequency"
+              count={phase2frequency}
+              unit="Hz"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#78A845]"
+            />
+            <AddCards
+              icon={<GiLightningFrequency />}
+              title="Frequency"
+              count={phase3frequency}
+              unit="Hz"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
+            />
+            <SplitCards
+              icon={<BsLightningCharge />}
+              title="Frequency"
+              count={frequency}
+              unit="Hz"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
+            <SplitCards
+              icon={<BsLightningCharge />}
+              title="Apparent"
+              count={apparent}
+              unit="KVA"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
+          </div>
+          <div className="space-y-4">
             <AddCards
               icon={<TbGeometry />}
-              title="power_factor	"
+              title="Power_Factor"
               count={phase1power_factor}
-			  unit="Pf"
-            /> */}
+              unit="Pf"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#4B9CD3]"
+            />
+            <AddCards
+              icon={<TbGeometry />}
+              title="Power_Factor"
+              count={phase2power_factor}
+              unit="Pf"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#118A99]"
+            />
+            <AddCards
+              icon={<TbGeometry />}
+              title="Power_Factor"
+              count={phase3power_factor}
+              unit="Pf"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#FFF176]"
+            />
+            <SplitCards
+              icon={<BsLightningCharge />}
+              title="Power-Fa"
+              count={powerfactor}
+              unit="pf"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
+            <SplitCards
+              icon={<BsLightningCharge />}
+              title="Reactive"
+              count={reactive}
+              unit="KVAR"
+              bgColor="lg:bg-[#ffffff]"
+              smBgColor="bg-[#BA6C86]"
+            />
           </div>
         </div>
+      ) : (
+        <div className="space-y-4">
+   
+            <>
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Phase 1"
+                bgColor="bg-[#4B9CD3]"
+              />
+              <ReactApexChart
+                options={options}
+                series={[phase1voltage]}
+                type="radialBar"
+                style={{ background: '#C62828', height: "132px", borderRadius: "0.5rem", overflow: "hidden" }}
+              />
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Current"
+                count={phase1current}
+                unit="A"
+                bgColor="bg-[#4B9CD3]"
+              />
+              <AddCards
+                icon={<SiPowerbi />}
+                title="Power"
+                count={phase1power}
+                unit="Kw"
+                bgColor="bg-[#4B9CD3]"
+              />
+              <AddCards
+                icon={<BsLightningCharge />}
+                title="Energy"
+                count={phase1energy}
+                unit="W/h"
+                bgColor="bg-[#4B9CD3]"
+              />
+              <AddCards
+                icon={<GiLightningFrequency />}
+                title="Frequency"
+                count={phase1frequency}
+                unit="Hz"
+                bgColor="bg-[#4B9CD3]"
+              />
+              <AddCards
+                icon={<TbGeometry />}
+                title="Power_Factor"
+                count={phase1power_factor}
+                unit="Pf"
+                bgColor="bg-[#4B9CD3]"
+              />
+            </>
+       
+            <>
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Phase 2"
+                bgColor="bg-[#118A99]"
+              />
+              <ReactApexChart
+                options={options}
+                series={[phase2voltage]}
+                type="radialBar"
+                style={{ background: '#78A845', height: "132px", borderRadius: "0.5rem", overflow: "hidden" }}
+              />
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Current"
+                count={phase2current}
+                unit="A"
+                bgColor="bg-[#118A99]"
+              />
+              <AddCards
+                icon={<SiPowerbi />}
+                title="Power"
+                count={phase2power}
+                unit="Kw"
+                bgColor="bg-[#118A99]"
+              />
+              <AddCards
+                icon={<BsLightningCharge />}
+                title="Energy"
+                count={phase2energy}
+                unit="W/h"
+                bgColor="bg-[#118A99]"
+              />
+              <AddCards
+                icon={<GiLightningFrequency />}
+                title="Frequency"
+                count={phase2frequency}
+                unit="Hz"
+                bgColor="bg-[#118A99]"
+              />
+              <AddCards
+                icon={<TbGeometry />}
+                title="Power_Factor"
+                count={phase2power_factor}
+                unit="Pf"
+                bgColor="bg-[#118A99]"
+              />
+            </>
+        
+            <>
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Phase 3"
+                bgColor="bg-[#FFF176]"
+              />
+              <ReactApexChart
+                options={options}
+                series={[phase3voltage]}
+                type="radialBar"
+                style={{ background: '#FFF176', height: "132px", borderRadius: "0.5rem", overflow: "hidden" }}
+              />
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Current"
+                count={phase3current}
+                unit="A"
+                bgColor="bg-[#FFF176]"
+              />
+              <AddCards
+                icon={<SiPowerbi />}
+                title="Power"
+                count={phase3power}
+                unit="Kw"
+                bgColor="bg-[#FFF176]"
+              />
+              <AddCards
+                icon={<BsLightningCharge />}
+                title="Energy"
+                count={phase3energy}
+                unit="W/h"
+                bgColor="bg-[#FFF176]"
+              />
+              <AddCards
+                icon={<GiLightningFrequency />}
+                title="Frequency"
+                count={phase3frequency}
+                unit="Hz"
+                bgColor="bg-[#FFF176]"
+              />
+              <AddCards
+                icon={<TbGeometry />}
+                title="Power_Factor"
+                count={phase3power_factor}
+                unit="Pf"
+                bgColor="bg-[#FFF176]"
+              />
+            </>
+   
+            <>
+              <AddCards
+                icon={<PiWaveSineFill />}
+                title="Three Phase"
+                bgColor="bg-[#BA6C86]"
+              />
+              <ReactApexChart
+                options={options}
+                series={[threephasevoltage]}
+                type="radialBar"
+                style={{ background: '#BA6C86', height: "132px", borderRadius: "0.5rem", overflow: "hidden" }}
+              />
+              <AddCards
+                icon={<SiPowerbi />}
+                title="Active-Power"
+                count={phase1power}
+                unit="Kw"
+                bgColor="bg-[#BA6C86]"
+              />
+              <AddCards
+                icon={<BsLightningCharge />}
+                title="Energy"
+                count={threephaseenergy}
+                unit="W/h"
+                bgColor="bg-[#BA6C86]"
+              />
+              <AddCards
+                icon={<GiLightningFrequency />}
+                title="Frequency"
+                count={frequency}
+                unit="Hz"
+                bgColor="bg-[#BA6C86]"
+              />
+              <SplitCards
+                icon={<BsLightningCharge />}
+                title="Apparent"
+                count={apparent}
+                unit="KVA"
+                bgColor="bg-[#BA6C86]"
+              />
+              <SplitCards
+                icon={<BsLightningCharge />}
+                title="Power-Fa"
+                count={powerfactor}
+                unit="pf"
+                bgColor="bg-[#BA6C86]"
+              />
+              <SplitCards
+                icon={<BsLightningCharge />}
+                title="Reactive"
+                count={reactive}
+                unit="KVAR"
+                bgColor="bg-[#BA6C86]"
+              />
+            </>
+
+        </div>
+      )}
+    </div>
 
         <div className="flex flex-col items-center justify-center">
           <div className="w-full flex flex-col lg:flex-row gap-4 pl-2 pr-2">
-            <div className="flex flex-col items-center bg-white p-3 rounded-md shadow-md  md:w-full sm:w-auto">
+            <div className="flex flex-col items-center bg-white rounded-lg p-3 rounded-md shadow-md  md:w-full sm:w-auto">
               <FaCalendarDay className="text-2xl mb-2 text-blue-500" />
               <h3 className="text-xl font-semibold">Today’s Usage</h3>
               <p className="text-lg">{todayUsage} kWh</p>
