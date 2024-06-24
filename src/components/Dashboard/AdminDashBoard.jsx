@@ -343,37 +343,30 @@ const AdminDashBoard = () => {
     }
   };
 
-
   const fetchDailyAndMonthlyData = async () => {
     try {
-      const response = await axios.get(
-        `${API_URL}/api/sensors/data/${device_id}`
-      );
+      const response = await axios.get(`${API_URL}/api/sensors/data/${device_id}`);
       const data = response.data;
   
-      let averageDailyPower = 0;
-      let averageMonthlyPower = 0;
+      let totalDailyAveragePower = 0;
+      let totalMonthlyAveragePower = 0;
   
       // Function to filter and sum power for a specific condition
-      const filterAndSumPower = (phaseData, filterCondition, isMonthly) => {
+      const filterAndSumPower = (phaseData, filterCondition) => {
         const powerData = Array(24).fill(0);
         const zeroCountData = Array(24).fill(0);
         let totalPower = 0;
-        let totalMinutesWithPower = 0;
+        let validMinutes = 0;
   
         phaseData.forEach((item) => {
-          const filterDate = isMonthly ?
-            new Date(item.reading_date).getMonth() + 1 === new Date().getMonth() + 1 :
-            item.reading_date === new Date().toISOString().split('T')[0];
-  
-          if (filterCondition(item) && filterDate) {
+          if (filterCondition(item)) {
             const hour = parseInt(item.reading_time.split(":")[0]);
             const powerValue = item.power;
   
             if (powerValue !== 0) {
               powerData[hour] += powerValue;
               totalPower += powerValue;
-              totalMinutesWithPower++;
+              validMinutes++;
             } else {
               zeroCountData[hour]++;
             }
@@ -382,42 +375,49 @@ const AdminDashBoard = () => {
   
         // Calculate average power per hour
         const averagePowerData = powerData.map((sum, index) => {
-          const validMinutes = 60 - zeroCountData[index];
-          return validMinutes === 0 ? 0 : (sum / validMinutes) / 1000; // Convert to kW
+          const validHourMinutes = 60 - zeroCountData[index];
+          return validHourMinutes === 0 ? 0 : (sum / validHourMinutes) / 1000; // Convert to kW
         });
   
-        // Return object with calculated values
+        // Calculate total average power for the day
+        const dailyAveragePower = averagePowerData.reduce((acc, val) => acc + val, 0);
+  
         return {
-          averagePowerData,
-          totalMinutesWithPower,
+          dailyAveragePower,
+          validMinutes,
         };
       };
   
       if (data.length > 0) {
-        const currentMonth = new Date().getMonth() + 1;
-        const todayDate = new Date().toISOString().split('T')[0];
+        // Daily filter condition (current date)
+        const dailyFilterCondition = (item) => item.reading_date === new Date().toISOString().split('T')[0];
+        const threePhaseDaily = filterAndSumPower(data[0].three_phase, dailyFilterCondition);
+  
+        // Calculate total average power for daily usage
+        totalDailyAveragePower = threePhaseDaily.dailyAveragePower;
   
         // Monthly filter condition (current month)
-        const monthlyFilterCondition = (item) => true; // All items for monthly sum
-        const threePhaseMonthly = filterAndSumPower(data[0].three_phase, monthlyFilterCondition, true);
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
   
-        // Calculate average power for monthly usage
-        averageMonthlyPower = threePhaseMonthly.averagePowerData.reduce((acc, val) => acc + val, 0);
+        let dailyAverages = [];
+        for (let day = 1; day <= new Date().getDate(); day++) {
+          const currentDate = new Date(currentYear, currentMonth - 1, day).toISOString().split('T')[0];
+          const dailyFilterConditionForMonth = (item) => item.reading_date === currentDate;
+          const threePhaseDailyForMonth = filterAndSumPower(data[0].three_phase, dailyFilterConditionForMonth);
+          dailyAverages.push(threePhaseDailyForMonth.dailyAveragePower);
+        }
   
-        // Daily filter condition (current date)
-        const dailyFilterCondition = (item) => true; // All items for daily sum
-        const threePhaseDaily = filterAndSumPower(data[0].three_phase, dailyFilterCondition, false);
-  
-        // Calculate average power for daily usage
-        averageDailyPower = threePhaseDaily.averagePowerData.reduce((acc, val) => acc + val, 0);
+        // Calculate total average power for monthly usage by summing daily averages
+        totalMonthlyAveragePower = dailyAverages.reduce((acc, val) => acc + val, 0);
   
         // Display results or update state
-        console.log(`Average power consumed today: ${averageDailyPower.toFixed(2)} kW`);
-        console.log(`Average power consumed this month: ${averageMonthlyPower.toFixed(2)} kW`);
+        console.log(`Total average power consumed today: ${totalDailyAveragePower.toFixed(2)} kW`);
+        console.log(`Total average power consumed this month: ${totalMonthlyAveragePower.toFixed(2)} kW`);
   
         // Update state with average values
-        setMonthlyUsage(averageMonthlyPower.toFixed(2));
-        setTodayUsage(averageDailyPower.toFixed(2));
+        setMonthlyUsage(totalMonthlyAveragePower.toFixed(2));
+        setTodayUsage(totalDailyAveragePower.toFixed(2));
       } else {
         console.warn("No data available");
       }
@@ -432,6 +432,14 @@ const AdminDashBoard = () => {
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
 
 
 
@@ -439,16 +447,17 @@ const AdminDashBoard = () => {
     fetchData();
     fetchDatas();
     fetchDailyAndMonthlyData();
-    const intervalId = setInterval(() => {
-      fetchData();
-      fetchDatas();
-      fetchDailyAndMonthlyData();
-    }, 30000); // 30 seconds interval
+    // const intervalId = setInterval(() => {
+    //   fetchData();
+    //   fetchDatas();
+    //   fetchDailyAndMonthlyData();
+    // }, 30000); // 30 seconds interval
 
-    return () => {
-      clearInterval(intervalId); // Clear interval on component unmount
-    };
-  }, []);
+    // return () => {
+    //   clearInterval(intervalId); // Clear interval on component unmount
+    // };
+  },
+   []);
   const [selectedPhase, setSelectedPhase] = useState(null);
   const isMobile = useMediaQuery({ maxWidth: 767 });
 

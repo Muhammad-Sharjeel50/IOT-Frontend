@@ -35,9 +35,9 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/user" element={
-          // <PermissionWrapper>
+          <PermissionWrapper>
             <AddUsers />
-          // </PermissionWrapper>
+           </PermissionWrapper>
         } />
 
         <Route path="/botConfiguration" element={
@@ -59,14 +59,14 @@ export default function App() {
         } />
 
         <Route path='/dashboard' element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <Dashboard />
-          // </ProtectedRoute>
+           </ProtectedRoute>
         } />
  <Route path='/device' element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <DeviceComponent   />
-          // </ProtectedRoute>
+           </ProtectedRoute>
         } />
         <Route path="/password-reset-request" element={
           <Passwordresetrequest />
