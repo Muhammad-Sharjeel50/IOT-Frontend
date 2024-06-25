@@ -965,3 +965,20 @@ button.btn.btn-danger.dropdown-toggle {
     flex-direction: row;
   }
 }
+.custom-swal {
+  width: 400px !important; /* Adjust the width as needed */
+  /* height: 100PX; */
+  padding: 10px !important; /* Adjust the padding as needed */
+}
+
+.custom-swal .swal2-title {
+  font-size: 16px !important; /* Adjust the title font size */
+}
+
+.custom-swal .swal2-content {
+  font-size: 14px !important; /* Adjust the content font size */
+}
+
+.custom-swal .swal2-popup {
+  padding: 1em !important;
+}

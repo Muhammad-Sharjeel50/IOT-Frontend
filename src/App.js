@@ -26,7 +26,8 @@ import Permitrole from './pages/rolespermissions/Permitrole';
 import RolesPermissions from './pages/rolespermissions/RolesPermissions';
 import AdminDashBoard from './components/Dashboard/AdminDashBoard';
 import DeviceComponent from './components/DeviceComponent';
-
+import TimerComponent from './components/Dashboard/TimerComponent';
+import { TimerProvider } from './components/Dashboard/TimerContext';
 export default function App() {
 
   return (
@@ -51,6 +52,10 @@ export default function App() {
            < Home />
         } />
         
+        <Route path="/notification" element={
+           < TimerComponent />
+        } />
+        
 
         <Route path='/three' element={
           // <ProtectedRoute>
@@ -59,9 +64,9 @@ export default function App() {
         } />
 
         <Route path='/dashboard' element={
-          <ProtectedRoute>
+         <ProtectedRoute>
             <Dashboard />
-           </ProtectedRoute>
+            </ProtectedRoute>
         } />
  <Route path='/device' element={
           <ProtectedRoute>

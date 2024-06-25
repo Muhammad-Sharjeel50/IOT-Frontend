@@ -18,23 +18,23 @@ export default function Sidebar(props) {
             link: '/home',
         },
         {
-            title: 'Configure Bot',
-            key: 'Configure_Bot',
+            title: 'Notification',
+            key: 'Notification',
             icon: <MdSupervisorAccount className="text-2xl text-black" />,
-            link: '/botConfiguration',
+         link: '/notification',
         },
-        {
-            title: 'Roles Permissions',
-            key: 'Roles_Permissions',
-            icon: <MdSupervisorAccount className="text-2xl text-black" />,
-            link: '/roles_permissions',
-        },
-        {
-            title: 'Queries',
-            key: 'Queries',
-            icon: <FaChessQueen className="text-2xl text-black" />,
-            link: '/agent/home',
-        },
+        // {
+        //     title: 'Roles Permissions',
+        //     key: 'Roles_Permissions',
+        //     icon: <MdSupervisorAccount className="text-2xl text-black" />,
+        //     link: '/roles_permissions',
+        // },
+        // {
+        //     title: 'Queries',
+        //     key: 'Queries',
+        //     icon: <FaChessQueen className="text-2xl text-black" />,
+        //     link: '/agent/home',
+        // },
         {
             title: 'Connect to Device',
             key: 'connecttodevice',

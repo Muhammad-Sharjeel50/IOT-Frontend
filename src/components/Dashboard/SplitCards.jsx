@@ -16,7 +16,8 @@ const SplitCards = ({ bgColor,title,count,unit,smBgColor}) => {
 
     <div className={` rounded-lg flex-1 py-1 flex flex-col items-center flex-1 bg-white  shadow-md ${bgColor} ${smBgColor}`} >
         <div className=" flex justify-center items-center mb-1 text-blue-900">
-        <h3 className="text-center  text-md font-medium lg:white space-wrap">{title}</h3>
+        <h3 className="text-center h-4 font-bold mb-2 font-medium lg:white space-wrap text-black">{title}</h3>
+
         </div>
         <p className="font-bold">{count}{unit}</p>
       </div>
